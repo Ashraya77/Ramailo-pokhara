@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# Runtime article uploads (keep only the directory placeholder)
+/public/uploads/articles/*
+!/public/uploads/articles/.gitkeep
