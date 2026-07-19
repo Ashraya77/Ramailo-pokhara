@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,6 +11,7 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  --font-editorial: var(--font-editorial);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -134,5 +136,227 @@
     font-family:
       var(--font-geist-sans), "Noto Sans Devanagari", "Nirmala UI", Mangal,
       sans-serif;
+  }
+
+  .public-shell {
+    --background: var(--public-paper);
+    --foreground: var(--public-ink);
+    --card: var(--public-paper);
+    --card-foreground: var(--public-ink);
+    --primary: var(--public-accent);
+    --primary-foreground: #fffaf4;
+    --secondary: #eee9df;
+    --secondary-foreground: var(--public-ink);
+    --muted: #e9e4da;
+    --muted-foreground: var(--public-muted);
+    --accent: #eee9df;
+    --accent-foreground: var(--public-accent-dark);
+    --destructive: var(--public-accent);
+    --border: var(--public-border);
+    --ring: var(--public-accent);
+    --public-paper: #f7f3ea;
+    --public-paper-deep: #eee9df;
+    --public-ink: #171614;
+    --public-muted: #69645d;
+    --public-accent: #c42d20;
+    --public-accent-dark: #8f1f17;
+    --public-border: #d8d1c5;
+    --public-border-strong: #292623;
+    --font-editorial: Georgia, "Times New Roman", "Noto Serif Devanagari",
+      "Nirmala UI", serif;
+    background-color: var(--public-paper);
+    color: var(--public-ink);
+  }
+
+  .public-container {
+    width: min(100% - 2rem, 86rem);
+    margin-inline: auto;
+  }
+
+  .font-editorial {
+    font-family: var(--font-editorial);
+  }
+
+  .editorial-kicker {
+    color: var(--public-accent);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
+  .editorial-section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--public-border-strong);
+  }
+
+  .editorial-section-title {
+    margin-top: 0.2rem;
+    font-family: var(--font-editorial);
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+  }
+
+  .editorial-more-link {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.35rem;
+    padding-bottom: 0.15rem;
+    color: var(--public-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .editorial-more-link svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  .editorial-more-link:hover,
+  .editorial-nav-link:hover {
+    color: var(--public-accent);
+  }
+
+  .editorial-category-link {
+    color: var(--public-accent);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
+  .editorial-category-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2rem;
+  }
+
+  .editorial-date {
+    display: inline-block;
+    color: var(--public-muted);
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+
+  .editorial-lead-title {
+    overflow-wrap: anywhere;
+    font-family: var(--font-editorial);
+    font-size: clamp(2.25rem, 4vw, 4.5rem);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 0.98;
+  }
+
+  .editorial-card-title {
+    overflow-wrap: anywhere;
+    font-family: var(--font-editorial);
+    font-size: clamp(1.35rem, 2vw, 1.7rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.16;
+  }
+
+  .editorial-lead-title a,
+  .editorial-card-title a {
+    text-decoration-color: var(--public-accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25rem;
+  }
+
+  .editorial-lead-title a:hover,
+  .editorial-card-title a:hover {
+    text-decoration-line: underline;
+  }
+
+  .editorial-rank {
+    min-width: 2.25rem;
+    color: var(--public-accent);
+    font-family: var(--font-editorial);
+    font-size: 1.55rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .breaking-strip {
+    overflow: hidden;
+    border-bottom: 1px solid var(--public-border-strong);
+    background: var(--public-accent);
+    color: #fffaf4;
+  }
+
+  .breaking-label {
+    display: flex;
+    flex: none;
+    align-items: center;
+    padding-inline: 0.85rem;
+    border-right: 1px solid rgb(255 255 255 / 35%);
+    background: var(--public-ink);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .editorial-main-grid {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .popular-panel {
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+    border-top: 3px solid var(--public-accent);
+    border-bottom: 1px solid var(--public-border-strong);
+    background: var(--public-paper-deep);
+  }
+
+  .image-placeholder {
+    background-color: var(--public-paper-deep);
+    background-image:
+      linear-gradient(var(--public-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--public-border) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .article-prose {
+    font-family: Georgia, "Times New Roman", "Noto Serif Devanagari", serif;
+    font-size: 1.12rem;
+    line-height: 1.85;
+  }
+
+  .article-prose > p:first-of-type::first-letter {
+    float: left;
+    margin: 0.08em 0.12em 0 0;
+    color: var(--public-accent);
+    font-size: 4.2em;
+    font-weight: 800;
+    line-height: 0.75;
+  }
+}
+
+@media (min-width: 40rem) {
+  .public-container {
+    width: min(100% - 3rem, 86rem);
+  }
+}
+
+@media (min-width: 64rem) {
+  .public-container {
+    width: min(100% - 4rem, 86rem);
+  }
+
+  .editorial-main-grid {
+    grid-template-columns: minmax(0, 1.7fr) minmax(17rem, 0.78fr) minmax(15rem, 0.62fr);
+    gap: 1.75rem;
   }
 }

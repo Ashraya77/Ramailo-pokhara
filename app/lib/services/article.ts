@@ -117,6 +117,11 @@ export async function listArticles(
       ? {
           status: ArticleStatus.PUBLISHED,
           publishedAt: { not: null, lte: now },
+          author: { isActive: true },
+          category: {
+            isActive: true,
+            ...(query.category ? { slug: query.category } : {}),
+          },
         }
       : query.status
         ? { status: query.status }
@@ -130,7 +135,9 @@ export async function listArticles(
         }
       : {}),
     ...(query.categoryId ? { categoryId: query.categoryId } : {}),
-    ...(query.category ? { category: { slug: query.category } } : {}),
+    ...(isAdmin && query.category
+      ? { category: { slug: query.category } }
+      : {}),
     ...(query.featured === undefined ? {} : { isFeatured: query.featured }),
     ...(query.breaking === undefined ? {} : { isBreaking: query.breaking }),
   };
@@ -161,6 +168,41 @@ export async function listArticles(
   };
 }
 
+const seoArticleSelect = {
+  title: true,
+  slug: true,
+  excerpt: true,
+  featuredImage: true,
+  featuredImageAlt: true,
+  publishedAt: true,
+  updatedAt: true,
+  category: {
+    select: {
+      name: true,
+      slug: true,
+    },
+  },
+  author: {
+    select: {
+      name: true,
+    },
+  },
+} satisfies Prisma.ArticleSelect;
+
+export async function listPublishedArticlesForSeo(limit?: number) {
+  return prisma.article.findMany({
+    where: {
+      status: ArticleStatus.PUBLISHED,
+      publishedAt: { not: null, lte: new Date() },
+      author: { isActive: true },
+      category: { isActive: true },
+    },
+    select: seoArticleSelect,
+    orderBy: { publishedAt: "desc" },
+    ...(limit === undefined ? {} : { take: limit }),
+  });
+}
+
 export async function getArticleById(id: string) {
   return prisma.article.findUnique({
     where: { id },
@@ -168,27 +210,50 @@ export async function getArticleById(id: string) {
   });
 }
 
-export async function getPublishedArticleBySlug(slug: string) {
-  try {
-    return await prisma.article.update({
-      where: {
-        slug,
-        status: ArticleStatus.PUBLISHED,
-        publishedAt: { not: null, lte: new Date() },
-      },
-      data: { views: { increment: 1 } },
-      select: articleDetailSelect,
-    });
-  } catch (error: unknown) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      return null;
-    }
+export async function findPublishedArticleBySlug(slug: string) {
+  return prisma.article.findFirst({
+    where: {
+      slug,
+      status: ArticleStatus.PUBLISHED,
+      publishedAt: { not: null, lte: new Date() },
+      author: { isActive: true },
+      category: { isActive: true },
+    },
+    select: articleDetailSelect,
+  });
+}
 
-    throw error;
+export type PublishedArticleViewIncrementResult = {
+  updated: boolean;
+};
+
+export async function incrementPublishedArticleViews(
+  articleId: string,
+): Promise<PublishedArticleViewIncrementResult> {
+  const result = await prisma.article.updateMany({
+    where: {
+      id: articleId,
+      status: ArticleStatus.PUBLISHED,
+      publishedAt: { not: null, lte: new Date() },
+      author: { isActive: true },
+    },
+    data: { views: { increment: 1 } },
+    limit: 1,
+  });
+
+  return { updated: result.count === 1 };
+}
+
+export async function getPublishedArticleBySlug(slug: string) {
+  const article = await findPublishedArticleBySlug(slug);
+
+  if (!article) {
+    return null;
   }
+
+  const result = await incrementPublishedArticleViews(article.id);
+
+  return result.updated ? { ...article, views: article.views + 1 } : null;
 }
 
 export async function createArticle(

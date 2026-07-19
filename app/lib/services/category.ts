@@ -40,9 +40,34 @@ export async function listCategories(query: CategoryListQuery) {
   });
 }
 
+export async function listActivePublicCategories() {
+  return prisma.category.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      color: true,
+      updatedAt: true,
+    },
+  });
+}
+
 export async function getCategoryById(id: string) {
   return prisma.category.findUnique({
     where: { id },
+    include: { _count: { select: withArticleCount } },
+  });
+}
+
+export async function findActiveCategoryBySlug(slug: string) {
+  return prisma.category.findFirst({
+    where: {
+      slug,
+      isActive: true,
+    },
     include: { _count: { select: withArticleCount } },
   });
 }
