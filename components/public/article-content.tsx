@@ -9,7 +9,7 @@ export function ArticleContent({ html }: ArticleContentProps) {
 
   return (
     <div
-      className="article-prose prose prose-neutral mx-auto max-w-3xl prose-headings:font-editorial prose-headings:scroll-mt-24 prose-headings:font-black prose-headings:tracking-tight prose-headings:text-[var(--public-ink)] prose-a:font-semibold prose-a:text-[var(--public-accent)] prose-a:underline prose-a:underline-offset-4 prose-blockquote:border-[var(--public-accent)] prose-blockquote:text-[var(--public-muted)] prose-figcaption:text-center prose-code:break-words prose-pre:max-w-full prose-pre:overflow-x-auto prose-pre:rounded-[2px] prose-pre:bg-[var(--public-ink)] prose-pre:text-[var(--public-paper)] [&_a]:[overflow-wrap:anywhere] [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-4 [&_a]:focus-visible:outline-[var(--public-accent)]"
+      className="article-prose prose prose-neutral max-w-none prose-headings:font-editorial prose-headings:scroll-mt-24 prose-headings:font-black prose-headings:tracking-tight prose-headings:text-[var(--public-ink)] prose-a:font-semibold prose-a:text-[var(--public-ink)] prose-a:no-underline prose-blockquote:border-[var(--public-accent)] prose-blockquote:text-[var(--public-muted)] prose-figcaption:text-center prose-code:break-words prose-pre:max-w-full prose-pre:overflow-x-auto prose-pre:rounded-[2px] prose-pre:bg-[var(--public-ink)] prose-pre:text-[var(--public-background)] [&_a]:[overflow-wrap:anywhere] [&_a:hover]:text-[var(--public-accent)] [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-4 [&_a]:focus-visible:outline-[var(--public-accent)]"
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   );

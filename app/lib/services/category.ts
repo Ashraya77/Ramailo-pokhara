@@ -17,6 +17,26 @@ export class CategoryConflictError extends Error {
   }
 }
 
+async function createUniqueCategorySlug(baseSlug: string): Promise<string> {
+  let slug = baseSlug;
+  let counter = 1;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const conflict = await prisma.category.findFirst({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (!conflict) {
+      return slug;
+    }
+
+    counter += 1;
+    slug = `${baseSlug}-${counter}`;
+  }
+}
+
 export async function listCategories(query: CategoryListQuery) {
   return prisma.category.findMany({
     where: {
@@ -97,10 +117,11 @@ async function ensureUniqueCategory(
 export async function createCategory(
   input: CreateCategoryInput & { slug: string },
 ) {
-  await ensureUniqueCategory(input.name, input.slug);
+  const slug = await createUniqueCategorySlug(input.slug);
+  await ensureUniqueCategory(input.name, slug);
 
   return prisma.category.create({
-    data: input,
+    data: { ...input, slug },
     include: { _count: { select: withArticleCount } },
   });
 }

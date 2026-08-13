@@ -36,10 +36,10 @@ export async function generateMetadata({
   if (!category) notFound();
 
   const page = parsePageParam(resolvedSearchParams.page);
-  const title = page > 1 ? `${category.name} – Page ${page}` : category.name;
+  const title = page > 1 ? `${category.name} – पृष्ठ ${page}` : category.name;
   const description =
     category.description ??
-    `Read the latest published ${category.name} news and updates from Pokhara.`;
+    `पोखराबाट प्रकाशित ${category.name} सम्बन्धी ताजा समाचार र अपडेट पढ्नुहोस्।`;
   const canonical = new URL(
     `/category/${encodeURIComponent(category.slug)}`,
     siteConfig.url,
@@ -92,13 +92,13 @@ export default async function CategoryPage({
   );
   const description =
     category.description ??
-    `The latest reporting and updates filed under ${category.name}.`;
+    `${category.name} अन्तर्गतका ताजा रिपोर्ट र अपडेट।`;
   const categoryUrl = new URL(
     `/category/${encodeURIComponent(category.slug)}`,
     siteConfig.url,
   );
   const breadcrumbData = getBreadcrumbStructuredData([
-    { name: "Home", url: new URL("/", siteConfig.url) },
+    { name: "गृहपृष्ठ", url: new URL("/", siteConfig.url) },
     { name: category.name, url: categoryUrl },
   ]);
 
@@ -106,31 +106,31 @@ export default async function CategoryPage({
     <div className="public-container flex flex-col gap-10 py-8 sm:gap-12 sm:py-12 lg:py-16">
       <JsonLd data={breadcrumbData} />
       <DiscoveryPageHeader
-        eyebrow="News category"
+        eyebrow="समाचार श्रेणी"
         title={category.name}
         description={description}
         accent={category.color}
-        meta={`${result.meta.total} ${result.meta.total === 1 ? "article" : "articles"}`}
+        meta={`${result.meta.total} समाचार`}
       />
 
       {result.articles.length ? (
         <ArticleListingGrid articles={result.articles} />
       ) : result.meta.total ? (
         <EditorialEmptyState
-          eyebrow="Beyond the archive"
-          title="There are no stories on this page."
-          description={`Return to the first page of ${category.name} to continue reading.`}
+          eyebrow="अभिलेखभन्दा बाहिर"
+          title="यस पृष्ठमा कुनै समाचार छैन।"
+          description={`${category.name} का समाचार पढ्न पहिलो पृष्ठमा फर्कनुहोस्।`}
           action={{
             href: `/category/${encodeURIComponent(category.slug)}?page=1`,
-            label: `Return to ${category.name}`,
+            label: `${category.name} मा फर्कनुहोस्`,
           }}
         />
       ) : (
         <EditorialEmptyState
-          eyebrow="Category desk"
-          title={`No ${category.name} stories have been published yet.`}
-          description="Published reporting in this category will appear here."
-          action={{ href: "/news", label: "Browse all latest news" }}
+          eyebrow="श्रेणी डेस्क"
+          title={`${category.name} सम्बन्धी कुनै समाचार अहिलेसम्म प्रकाशित भएको छैन।`}
+          description="यस श्रेणीमा प्रकाशित समाचार यहाँ देखिनेछन्।"
+          action={{ href: "/news", label: "ताजा समाचार ब्राउज गर्नुहोस्" }}
         />
       )}
 

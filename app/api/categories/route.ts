@@ -3,7 +3,6 @@ import type { NextRequest } from "next/server";
 import {
   authorizationError,
   handleCategoryError,
-  invalidSlugError,
   malformedJsonError,
   validationError,
 } from "@/app/api/categories/category-route-utils";
@@ -13,7 +12,7 @@ import {
   createCategory,
   listCategories,
 } from "@/app/lib/services/category";
-import { slugify } from "@/app/lib/slug";
+import { slugifyOrFallback } from "@/app/lib/slug";
 import {
   categoryListQuerySchema,
   createCategorySchema,
@@ -55,11 +54,8 @@ export async function POST(request: Request) {
     return validationError(parsed.error);
   }
 
-  const slug = slugify(parsed.data.slug ?? parsed.data.name);
-
-  if (!slug) {
-    return invalidSlugError();
-  }
+  const slugSource = parsed.data.slug?.trim() || parsed.data.name;
+  const slug = slugifyOrFallback(slugSource, "category");
 
   try {
     const category = await createCategory({ ...parsed.data, slug });

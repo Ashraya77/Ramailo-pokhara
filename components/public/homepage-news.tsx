@@ -2,6 +2,7 @@ import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 
 import { formatPublicDateShort } from "@/app/lib/public-date";
+import { ui } from "@/app/lib/ui-text";
 import { ArticleImage } from "@/components/public/article-image";
 import type { PublicCategory } from "@/components/public/category-navigation";
 import { cn } from "@/lib/utils";
@@ -38,7 +39,7 @@ export function SectionHeading({ title, eyebrow, href }: SectionHeadingProps) {
       </div>
       {href ? (
         <Link className="editorial-more-link" href={href}>
-          View all <ArrowRightIcon aria-hidden="true" />
+          {ui.articleViewAll} <ArrowRightIcon aria-hidden="true" />
         </Link>
       ) : null}
     </div>
@@ -208,7 +209,7 @@ export function CompactArticleRow({
       <div className="min-w-0">
         <h3 className="font-editorial text-lg leading-[1.35] font-bold">
           <Link
-            className="decoration-[var(--public-accent)] decoration-1 underline-offset-4 group-hover:underline"
+            className="text-[var(--public-ink)] no-underline transition-colors group-hover:text-[var(--public-accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--public-accent)]"
             href={`/articles/${encodeURIComponent(article.slug)}`}
           >
             {article.title}
@@ -231,16 +232,16 @@ export function BreakingStrip({
   if (articles.length === 0) return null;
 
   return (
-    <section aria-label="Breaking news" className="breaking-strip">
+    <section aria-label="ताजा खबर" className="breaking-strip">
       <div className="public-container flex min-w-0 items-stretch">
-        <p className="breaking-label">Breaking</p>
+        <p className="breaking-label">ताजा खबर</p>
         <div className="min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <ul className="flex min-w-max items-center gap-8 px-5 py-2.5">
             {articles.map((article) => (
               <li key={article.id} className="flex items-center gap-3 text-sm font-semibold">
                 <span aria-hidden="true" className="size-1.5 bg-current" />
                 <Link
-                  className="underline-offset-4 hover:underline"
+                  className="no-underline transition-colors hover:text-[var(--public-accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                   href={`/articles/${encodeURIComponent(article.slug)}`}
                 >
                   {article.title}
@@ -280,7 +281,7 @@ export function CategorySection({
   return (
     <section>
       <SectionHeading
-        eyebrow="In focus"
+        eyebrow="विशेष फोकस"
         title={category.name}
         href={`/category/${encodeURIComponent(category.slug)}`}
       />
@@ -310,7 +311,7 @@ export type HomepageNewsData = {
   }>;
 };
 
-export function HomepageNews({ data }: { data: HomepageNewsData }) {
+export async function HomepageNews({ data }: { data: HomepageNewsData }) {
   const hasStories = Boolean(
     data.lead ||
       data.breaking.length ||
@@ -325,12 +326,12 @@ export function HomepageNews({ data }: { data: HomepageNewsData }) {
     return (
       <div className="public-container py-20 sm:py-28">
         <div className="max-w-2xl border-y border-[var(--public-border-strong)] py-10">
-          <p className="editorial-kicker">The newsroom</p>
+          <p className="editorial-kicker">{ui.homeNewsroom}</p>
           <h1 className="font-editorial mt-3 text-4xl leading-tight font-bold sm:text-5xl">
-            No stories have been published yet.
+            {ui.homeEmptyTitle}
           </h1>
           <p className="mt-4 text-lg leading-8 text-[var(--public-muted)]">
-            Fresh reporting from Pokhara will appear here as soon as it is published.
+            {ui.homeEmptyDescription}
           </p>
         </div>
       </div>
@@ -342,7 +343,7 @@ export function HomepageNews({ data }: { data: HomepageNewsData }) {
       <BreakingStrip articles={data.breaking} />
       <div className="public-container flex flex-col gap-14 py-8 sm:gap-16 sm:py-10 lg:gap-20 lg:py-12">
         {data.lead ? (
-          <section aria-label="Top stories" className="editorial-main-grid">
+          <section aria-label="प्रमुख समाचार" className="editorial-main-grid">
             <div className="min-w-0 lg:border-r lg:border-[var(--public-border)] lg:pr-8">
               <LeadStory article={data.lead} />
             </div>
@@ -355,7 +356,7 @@ export function HomepageNews({ data }: { data: HomepageNewsData }) {
             ) : null}
             {data.sidebar.length ? (
               <aside className="border-t border-[var(--public-border-strong)] pt-5 lg:border-t-0 lg:border-l lg:border-[var(--public-border)] lg:pt-0 lg:pl-7">
-                <p className="editorial-kicker mb-4">Latest updates</p>
+                <p className="editorial-kicker mb-4">{ui.articleLatestUpdates}</p>
                 {data.sidebar.map((article) => (
                   <CompactArticleRow key={article.id} article={article} />
                 ))}
@@ -366,7 +367,7 @@ export function HomepageNews({ data }: { data: HomepageNewsData }) {
 
         {data.latest.length ? (
           <section>
-            <SectionHeading title="Latest news" eyebrow="Just in" href="/news" />
+            <SectionHeading title={ui.articleLatest} eyebrow={ui.articleJustIn} href="/news" />
             <div className="grid gap-x-7 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
               {data.latest.map((article) => (
                 <ArticleCard key={article.id} article={article} />
@@ -377,7 +378,7 @@ export function HomepageNews({ data }: { data: HomepageNewsData }) {
 
         {data.popular.length ? (
           <section className="popular-panel">
-            <SectionHeading title="Most read" eyebrow="Popular now" />
+            <SectionHeading title={ui.articleMostRead} eyebrow={ui.articlePopular} />
             <PopularNewsList articles={data.popular} />
           </section>
         ) : null}

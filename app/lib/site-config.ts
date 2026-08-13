@@ -21,13 +21,13 @@ function getSiteUrl(value: string | undefined): URL {
 export const siteConfig = Object.freeze({
   name: "Ramailo Pokhara",
   description:
-    "Independent news and updates from Pokhara and the surrounding community.",
-  locale: "en",
+    "पोखरा तथा आसपासका ताजा समाचार, रिपोर्ट र सामुदायिक अपडेट।",
+  locale: "ne",
   url: getSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
   navigation: Object.freeze([
-    Object.freeze({ label: "Home", href: "/" }),
-    Object.freeze({ label: "Latest News", href: "/news" }),
-    Object.freeze({ label: "Search", href: "/search" }),
+    Object.freeze({ label: "गृहपृष्ठ", href: "/" }),
+    Object.freeze({ label: "ताजा समाचार", href: "/news" }),
+    Object.freeze({ label: "खोज्नुहोस्", href: "/search" }),
   ]),
   socialLinks: Object.freeze([]),
 } as const);

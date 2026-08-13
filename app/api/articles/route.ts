@@ -5,7 +5,6 @@ import { authorizeAdmin } from "@/app/lib/admin-auth";
 import { successResponse } from "@/app/lib/api-response";
 import {
   authorizationError,
-  invalidSlugError,
   malformedJsonError,
   validationError,
 } from "@/app/lib/api-route-utils";
@@ -13,7 +12,7 @@ import {
   createArticle,
   listArticles,
 } from "@/app/lib/services/article";
-import { slugify } from "@/app/lib/slug";
+import { slugifyOrFallback } from "@/app/lib/slug";
 import {
   articleListQuerySchema,
   createArticleSchema,
@@ -70,11 +69,8 @@ export async function POST(request: Request) {
     return validationError(parsed.error);
   }
 
-  const slug = slugify(parsed.data.slug ?? parsed.data.title);
-
-  if (!slug) {
-    return invalidSlugError();
-  }
+  const slugSource = parsed.data.slug?.trim() || parsed.data.title;
+  const slug = slugifyOrFallback(slugSource, "news");
 
   try {
     const article = await createArticle(

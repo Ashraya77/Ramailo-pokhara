@@ -12,13 +12,20 @@ import {
   getOrganizationNode,
   type NewsArticleStructuredData,
 } from "@/app/lib/structured-data";
+
 import { ArticleContent } from "@/components/public/article-content";
 import { ArticleHeader } from "@/components/public/article-header";
 import { ArticleImage } from "@/components/public/article-image";
 import { JsonLd } from "@/components/public/json-ld";
+import { LatestNewsSidebar } from "@/components/public/latest-news-sidebar";
+import { RelatedNewsSection } from "@/components/public/related-news-section";
 import { YouTubeEmbed } from "@/components/public/youtube-embed";
 
-import { getArticlePageData } from "./article-data";
+import {
+  getArticlePageData,
+  getLatestArticleSidebarData,
+  getRelatedArticlePageData,
+} from "./article-data";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
@@ -38,13 +45,17 @@ export async function generateMetadata({
   const title = article.metaTitle ?? article.title;
   const description =
     article.metaDescription ?? article.excerpt ?? siteConfig.description;
+
   const canonicalUrl = new URL(
     `/articles/${encodeURIComponent(article.slug)}`,
     siteConfig.url,
   );
+
   const image = normalizeArticleMetadataImage(article.featuredImage);
   const imageAlt = article.featuredImageAlt?.trim() || article.title;
+
   const titleSuffix = ` | ${siteConfig.name}`;
+
   const metadataTitle = title.toLocaleLowerCase().endsWith(
     titleSuffix.toLocaleLowerCase(),
   )
@@ -54,7 +65,11 @@ export async function generateMetadata({
   return {
     title: metadataTitle,
     description,
-    alternates: { canonical: canonicalUrl },
+
+    alternates: {
+      canonical: canonicalUrl,
+    },
+
     openGraph: {
       type: "article",
       title,
@@ -68,12 +83,14 @@ export async function generateMetadata({
       section: article.category.name,
       images: image ? [{ url: image, alt: imageAlt }] : undefined,
     },
+
     twitter: {
       card: image ? "summary_large_image" : "summary",
       title,
       description,
       images: image ? [{ url: image, alt: imageAlt }] : undefined,
     },
+
     robots: {
       index: true,
       follow: true,
@@ -83,6 +100,7 @@ export async function generateMetadata({
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug: rawSlug } = await params;
+
   await connection();
 
   const slug = slugify(rawSlug);
@@ -97,18 +115,28 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
+  const [relatedArticles, latestArticles] = await Promise.all([
+    getRelatedArticlePageData(article.id, article.category.id),
+    getLatestArticleSidebarData(article.id),
+  ]);
+
   const publishedAt = article.publishedAt;
+
   const canonicalUrl = new URL(
     `/articles/${encodeURIComponent(article.slug)}`,
     siteConfig.url,
   );
+
   const categoryUrl = new URL(
     `/category/${encodeURIComponent(article.category.slug)}`,
     siteConfig.url,
   );
+
   const metadataImage = normalizeArticleMetadataImage(article.featuredImage);
+
   const description =
     article.metaDescription ?? article.excerpt ?? siteConfig.description;
+
   const articleStructuredData: NewsArticleStructuredData = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -126,10 +154,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     inLanguage: siteConfig.locale,
     image: metadataImage ? [metadataImage.href] : undefined,
   };
+
   const breadcrumbStructuredData = getBreadcrumbStructuredData([
-    { name: "Home", url: new URL("/", siteConfig.url) },
-    { name: article.category.name, url: categoryUrl },
-    { name: article.title, url: canonicalUrl },
+    {
+      name: "गृहपृष्ठ",
+      url: new URL("/", siteConfig.url),
+    },
+    {
+      name: article.category.name,
+      url: categoryUrl,
+    },
+    {
+      name: article.title,
+      url: canonicalUrl,
+    },
   ]);
 
   after(async () => {
@@ -141,38 +179,62 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   });
 
   return (
-    <article className="public-container flex flex-col gap-9 overflow-hidden py-8 sm:gap-12 sm:py-12 lg:py-16">
+    <article className="bg-background">
       <JsonLd data={articleStructuredData} />
       <JsonLd data={breadcrumbStructuredData} />
-      <ArticleHeader article={{ ...article, publishedAt }} />
-      {article.featuredImage ? (
-        <ArticleImage
-          src={article.featuredImage}
-          alt={article.featuredImageAlt}
-          title={article.title}
-          priority
-          sizes="(max-width: 1440px) calc(100vw - 4rem), 1376px"
-        />
-      ) : null}
-      <YouTubeEmbed url={article.youtubeUrl} articleTitle={article.title} />
-      <ArticleContent html={article.content} />
-      <footer className="mx-auto flex w-full max-w-3xl flex-col gap-6 border-t-2 border-[var(--public-border-strong)] pt-6">
-        <p className="editorial-kicker">Continue reading</p>
-        <nav aria-label="Continue browsing" className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-bold">
-          <Link
-            href={`/category/${encodeURIComponent(article.category.slug)}`}
-            className="text-[var(--public-accent)] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--public-accent)]"
-          >
-            More from {article.category.name}
-          </Link>
-          <Link
-            href="/news"
-            className="text-[var(--public-accent)] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--public-accent)]"
-          >
-            View latest news
-          </Link>
-        </nav>
-      </footer>
+
+      {/* Article heading */}
+      <section className="public-container pt-8 sm:pt-12 lg:pt-14">
+        <div className="mx-auto max-w-6xl">
+          <ArticleHeader
+            article={{
+              ...article,
+              publishedAt,
+            }}
+          />
+        </div>
+      </section>
+
+      <section className="public-container mt-8 sm:mt-10 lg:mt-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start xl:gap-12">
+          <div className="min-w-0">
+            {article.featuredImage ? (
+              <div className="overflow-hidden rounded-xl">
+                <ArticleImage
+                  src={article.featuredImage}
+                  alt={article.featuredImageAlt}
+                  title={article.title}
+                  priority
+                  sizes="(max-width: 1024px) 100vw, (max-width: 1440px) 72vw, 1100px"
+                />
+              </div>
+            ) : null}
+
+            <div className="py-10 sm:py-12 lg:py-14">
+              {article.youtubeUrl ? (
+                <div className="mb-10">
+                  <YouTubeEmbed
+                    url={article.youtubeUrl}
+                    articleTitle={article.title}
+                  />
+                </div>
+              ) : null}
+
+              <ArticleContent html={article.content} />
+            </div>
+          </div>
+
+          <div className="min-w-0 lg:sticky lg:top-24">
+            <LatestNewsSidebar articles={latestArticles} />
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <RelatedNewsSection articles={relatedArticles} />
+
+     
     </article>
   );
 }

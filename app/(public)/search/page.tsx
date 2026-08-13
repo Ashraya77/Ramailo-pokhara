@@ -26,9 +26,9 @@ export async function generateMetadata({
   const params = await searchParams;
   const search = normalizeSearchQuery(params.q);
   const title =
-    search.status === "valid" ? `Search: ${search.query}` : "Search News";
+    search.status === "valid" ? `खोज: ${search.query}` : "समाचार खोज्नुहोस्";
   const description =
-    "Search published Ramailo Pokhara news by headline and summary.";
+    "शीर्षक र समाचार सारांशका आधारमा प्रकाशित समाचार खोज्नुहोस्।";
   const canonical = new URL("/search", siteConfig.url);
 
   return {
@@ -76,12 +76,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <div className="public-container flex flex-col gap-9 py-8 sm:gap-11 sm:py-12 lg:py-16">
       <DiscoveryPageHeader
-        eyebrow="News archive"
-        title="Search the news"
-        description="Find published reporting by words in a headline or article summary."
+        eyebrow="समाचार अभिलेख"
+        title="समाचार खोज्नुहोस्"
+        description="शीर्षक वा समाचार सारांशका शब्दबाट प्रकाशित रिपोर्ट खोज्नुहोस्।"
         meta={
           result
-            ? `${result.meta.total} ${result.meta.total === 1 ? "result" : "results"}`
+            ? `${result.meta.total} नतिजा`
             : undefined
         }
       />
@@ -89,53 +89,53 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       {search.status === "initial" ? (
         <EditorialEmptyState
-          eyebrow="Start here"
-          title="Enter a phrase to explore the archive."
-          description="Search for a place, person, event, or topic using at least two characters."
+          eyebrow="यहाँबाट सुरु गर्नुहोस्"
+          title="अभिलेख खोज्न शब्द लेख्नुहोस्।"
+          description="स्थान, व्यक्ति, घटना वा विषय कम्तीमा दुई अक्षरमा खोज्नुहोस्।"
         />
       ) : search.status === "too-short" ? (
         <EditorialEmptyState
-          eyebrow="Refine your search"
-          title="That search is too short."
-          description="Use at least two characters so the archive can return useful results."
+          eyebrow="खोजी परिमार्जन गर्नुहोस्"
+          title="खोजी शब्द धेरै छोटो छ।"
+          description="उपयोगी नतिजाका लागि कम्तीमा दुई अक्षर प्रयोग गर्नुहोस्।"
         />
       ) : search.status === "too-long" ? (
         <EditorialEmptyState
-          eyebrow="Refine your search"
-          title="That search phrase is too long."
-          description="Keep your search to 200 characters or fewer and try again."
+          eyebrow="खोजी परिमार्जन गर्नुहोस्"
+          title="खोजी वाक्यांश धेरै लामो छ।"
+          description="खोजी २०० अक्षर वा कममा सीमित राखी फेरि प्रयास गर्नुहोस्।"
         />
       ) : result?.articles.length ? (
         <section aria-labelledby="search-results-heading">
           <div className="editorial-section-heading">
             <div className="min-w-0">
-              <p className="editorial-kicker">Search results</p>
+              <p className="editorial-kicker">खोजी नतिजा</p>
               <h2 id="search-results-heading" className="editorial-section-title [overflow-wrap:anywhere]">
                 “{search.query}”
               </h2>
             </div>
             <p className="shrink-0 text-xs font-bold tracking-wide text-[var(--public-muted)] uppercase">
-              {result.meta.total} {result.meta.total === 1 ? "result" : "results"}
+              {result.meta.total} नतिजा
             </p>
           </div>
           <ArticleListingGrid articles={result.articles} />
         </section>
       ) : result?.meta.total ? (
         <EditorialEmptyState
-          eyebrow="Beyond the results"
-          title="There are no results on this page."
-          description={`Return to the first page of results for “${search.query}”.`}
+          eyebrow="नतिजाभन्दा बाहिर"
+          title="यस पृष्ठमा कुनै नतिजा छैन।"
+          description={`“${search.query}” का नतिजाको पहिलो पृष्ठमा फर्कनुहोस्।`}
           action={{
             href: `/search?q=${encodeURIComponent(search.query)}&page=1`,
-            label: "Return to first page",
+            label: "पहिलो पृष्ठमा फर्कनुहोस्",
           }}
         />
       ) : (
         <EditorialEmptyState
-          eyebrow="No matches"
-          title={`No published stories matched “${search.query}”.`}
-          description="Try a broader phrase, check the spelling, or browse the latest reporting."
-          action={{ href: "/news", label: "Browse latest news" }}
+          eyebrow="मिल्ने समाचार भेटिएन"
+          title={`“${search.query}” सँग मिल्ने प्रकाशित समाचार भेटिएन।`}
+          description="अझ फराकिलो शब्द प्रयोग गर्नुहोस्, हिज्जे जाँच्नुहोस् वा ताजा समाचार ब्राउज गर्नुहोस्।"
+          action={{ href: "/news", label: "ताजा समाचार हेर्नुहोस्" }}
         />
       )}
 

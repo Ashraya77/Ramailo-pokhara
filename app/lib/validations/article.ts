@@ -1,4 +1,5 @@
 import { ArticleStatus } from "@/app/generated/prisma/client";
+import { countGraphemes, hasVisibleText } from "@/app/lib/text";
 import { z } from "zod";
 
 function isAcceptedImageLocation(value: string): boolean {
@@ -48,20 +49,39 @@ const nullableTrimmedString = (maximum: number, field: string) =>
   z
     .string()
     .trim()
-    .max(maximum, `${field} must contain at most ${maximum} characters.`)
+    .refine(
+      (value) => countGraphemes(value) <= maximum,
+      `${field} must contain at most ${maximum} characters.`,
+    )
     .nullable();
 
-const articleFields = {
-  title: z
+const boundedString = (minimum: number, maximum: number, field: string) =>
+  z
     .string()
     .trim()
-    .min(5, "Title must contain at least 5 characters.")
-    .max(200, "Title must contain at most 200 characters."),
-  slug: z.string().trim().max(220).optional(),
+    .refine(
+      (value) => countGraphemes(value) >= minimum,
+      `${field} must contain at least ${minimum} characters.`,
+    )
+    .refine(
+      (value) => countGraphemes(value) <= maximum,
+      `${field} must contain at most ${maximum} characters.`,
+    );
+
+const articleFields = {
+  title: boundedString(5, 200, "Title"),
+  slug: z
+    .string()
+    .trim()
+    .refine(
+      (value) => countGraphemes(value) <= 220,
+      "Slug must contain at most 220 characters.",
+    )
+    .optional(),
   excerpt: nullableTrimmedString(500, "Excerpt").optional(),
   content: z
     .string()
-    .refine((value) => value.trim().length > 0, "Content cannot be empty."),
+    .refine((value) => hasVisibleText(value), "Content cannot be empty."),
   featuredImage: z
     .string()
     .trim()

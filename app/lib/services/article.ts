@@ -61,6 +61,29 @@ export class InvalidArticleCategoryError extends Error {
   }
 }
 
+async function createUniqueArticleSlug(baseSlug: string): Promise<string> {
+  let slug = baseSlug;
+  let counter = 1;
+
+  // Keep generated slugs stable and URL-safe while resolving collisions.
+  // Example: `news-20260813-abc123-2`
+  // This only applies on create; updates still preserve explicit conflicts.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const conflict = await prisma.article.findFirst({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (!conflict) {
+      return slug;
+    }
+
+    counter += 1;
+    slug = `${baseSlug}-${counter}`;
+  }
+}
+
 async function ensureActiveCategory(categoryId: string): Promise<void> {
   const category = await prisma.category.findUnique({
     where: { id: categoryId },
@@ -223,6 +246,51 @@ export async function findPublishedArticleBySlug(slug: string) {
   });
 }
 
+export async function listRelatedPublishedArticlesByCategory({
+  articleId,
+  categoryId,
+  limit = 6,
+}: {
+  articleId: string;
+  categoryId: string;
+  limit?: number;
+}) {
+  return prisma.article.findMany({
+    where: {
+      id: { not: articleId },
+      categoryId,
+      status: ArticleStatus.PUBLISHED,
+      publishedAt: { not: null, lte: new Date() },
+      author: { isActive: true },
+      category: { isActive: true },
+    },
+    select: articleListSelect,
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+  });
+}
+
+export async function listLatestPublishedArticles({
+  excludeArticleId,
+  limit = 6,
+}: {
+  excludeArticleId?: string;
+  limit?: number;
+}) {
+  return prisma.article.findMany({
+    where: {
+      ...(excludeArticleId ? { id: { not: excludeArticleId } } : {}),
+      status: ArticleStatus.PUBLISHED,
+      publishedAt: { not: null, lte: new Date() },
+      author: { isActive: true },
+      category: { isActive: true },
+    },
+    select: articleListSelect,
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+  });
+}
+
 export type PublishedArticleViewIncrementResult = {
   updated: boolean;
 };
@@ -260,10 +328,9 @@ export async function createArticle(
   input: CreateArticleInput & { slug: string },
   authorId: string,
 ) {
-  await Promise.all([
-    ensureActiveCategory(input.categoryId),
-    ensureUniqueSlug(input.slug),
-  ]);
+  await ensureActiveCategory(input.categoryId);
+
+  const slug = await createUniqueArticleSlug(input.slug);
 
   const publishedAt =
     input.status === ArticleStatus.PUBLISHED
@@ -277,7 +344,7 @@ export async function createArticle(
   return prisma.article.create({
     data: {
       ...input,
-      slug: input.slug,
+      slug,
       authorId,
       publishedAt,
     },

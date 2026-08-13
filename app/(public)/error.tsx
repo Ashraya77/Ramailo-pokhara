@@ -18,15 +18,15 @@ export default function PublicError({ error, reset }: PublicErrorProps) {
   return (
     <div className="public-container flex max-w-3xl flex-col items-start gap-5 py-20 sm:py-28">
       <p className="editorial-kicker">
-        Something went wrong
+        केही समस्या भयो
       </p>
-      <h1 className="font-editorial text-4xl font-black tracking-tight sm:text-5xl">We could not load this page.</h1>
+      <h1 className="font-editorial text-4xl font-black tracking-tight sm:text-5xl">यो पृष्ठ लोड गर्न सकिएन।</h1>
       <p className="text-[var(--public-muted)]">
-        Please try again. If the problem continues, return to the homepage.
+        कृपया फेरि प्रयास गर्नुहोस्। समस्या रहिरहे गृहपृष्ठमा फर्कनुहोस्।
       </p>
       <div className="flex flex-wrap gap-3">
-        <Button className="rounded-none" type="button" onClick={reset}>Try again</Button>
-        <Button className="rounded-none" variant="outline" render={<Link href="/" />}>Go to homepage</Button>
+        <Button className="rounded-none" type="button" onClick={reset}>फेरि प्रयास गर्नुहोस्</Button>
+        <Button className="rounded-none" variant="outline" render={<Link href="/" />}>गृहपृष्ठमा जानुहोस्</Button>
       </div>
     </div>
   );

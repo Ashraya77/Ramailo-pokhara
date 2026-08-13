@@ -1,24 +1,24 @@
 import { siteConfig } from "@/app/lib/site-config";
 
-const publicDateFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
+const publicDateFormatter = (locale: string) => new Intl.DateTimeFormat(locale === "ne" ? "ne-NP-u-nu-deva" : "en-US", {
   dateStyle: "long",
   timeStyle: "short",
   timeZone: "Asia/Kathmandu",
 });
 
-const shortPublicDateFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
+const shortPublicDateFormatter = (locale: string) => new Intl.DateTimeFormat(locale === "ne" ? "ne-NP-u-nu-deva" : "en-US", {
   day: "numeric",
   month: "short",
   year: "numeric",
   timeZone: "Asia/Kathmandu",
 });
 
-export function formatPublicDate(value: Date): string {
-  return publicDateFormatter.format(value);
+export function formatPublicDate(value: Date, locale = "ne"): string {
+  return publicDateFormatter(locale).format(value);
 }
 
-export function formatPublicDateShort(value: Date): string {
-  return shortPublicDateFormatter.format(value);
+export function formatPublicDateShort(value: Date, locale = "ne"): string {
+  return shortPublicDateFormatter(locale).format(value);
 }
 
 export function hasMeaningfulUpdate(

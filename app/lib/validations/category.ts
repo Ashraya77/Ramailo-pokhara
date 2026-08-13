@@ -1,20 +1,33 @@
+import { countGraphemes } from "@/app/lib/text";
 import { z } from "zod";
 
 const nameSchema = z
   .string()
   .trim()
-  .min(2, "Name must contain at least 2 characters.")
-  .max(80, "Name must contain at most 80 characters.");
+  .refine(
+    (value) => countGraphemes(value) >= 2,
+    "Name must contain at least 2 characters.",
+  )
+  .refine(
+    (value) => countGraphemes(value) <= 80,
+    "Name must contain at most 80 characters.",
+  );
 
 const slugSchema = z
   .string()
   .trim()
-  .max(100, "Slug must contain at most 100 characters.");
+  .refine(
+    (value) => countGraphemes(value) <= 100,
+    "Slug must contain at most 100 characters.",
+  );
 
 const descriptionSchema = z
   .string()
   .trim()
-  .max(500, "Description must contain at most 500 characters.")
+  .refine(
+    (value) => countGraphemes(value) <= 500,
+    "Description must contain at most 500 characters.",
+  )
   .nullable();
 
 const colorSchema = z

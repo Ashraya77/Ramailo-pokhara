@@ -12,7 +12,7 @@ import {
   getArticleById,
   updateArticle,
 } from "@/app/lib/services/article";
-import { slugify } from "@/app/lib/slug";
+import { slugify, slugifyOrFallback } from "@/app/lib/slug";
 import { updateArticleSchema } from "@/app/lib/validations/article";
 
 type ArticleRouteContext = {
@@ -61,16 +61,25 @@ export async function PATCH(request: Request, context: ArticleRouteContext) {
     return validationError(parsed.error);
   }
 
-  const slugSource = parsed.data.slug ?? parsed.data.title;
-  const slug = slugSource === undefined ? undefined : slugify(slugSource);
-
-  if (slugSource !== undefined && !slug) {
-    return invalidSlugError();
-  }
-
   const { id } = await context.params;
+  const slugWasSupplied = Object.prototype.hasOwnProperty.call(parsed.data, "slug");
 
   try {
+    const current = await getArticleById(id);
+
+    if (!current) {
+      return errorResponse("ARTICLE_NOT_FOUND", "Article not found.", 404);
+    }
+
+    const slug = slugWasSupplied
+      ? slugify(parsed.data.slug?.trim() || parsed.data.title || current.title) ||
+        slugifyOrFallback(current.title, "news")
+      : undefined;
+
+    if (slugWasSupplied && !slug) {
+      return invalidSlugError();
+    }
+
     const article = await updateArticle(id, {
       ...parsed.data,
       ...(slug === undefined ? {} : { slug }),

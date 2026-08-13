@@ -11,12 +11,17 @@ import { Label } from "@/components/ui/label";
 import { apiUpload } from "@/lib/api-client";
 import { UploadedImage } from "@/lib/admin-types";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
+import {
+  handleNepaliInputBlur,
+  handleNepaliInputCommit,
+} from "@/app/lib/nepali-input";
 
 type ImageUploadProps = {
   value: string | null | undefined;
   onChange: (url: string | null) => void;
   altText: string | null | undefined;
   onAltTextChange: (alt: string | null) => void;
+  nepaliTypingEnabled?: boolean;
 };
 
 export function ImageUpload({
@@ -24,6 +29,7 @@ export function ImageUpload({
   onChange,
   altText,
   onAltTextChange,
+  nepaliTypingEnabled = false,
 }: ImageUploadProps) {
   const { dictionary } = useAdminI18n();
   const [uploading, setUploading] = useState(false);
@@ -135,6 +141,8 @@ export function ImageUpload({
             placeholder={dictionary.media.altPlaceholder}
             value={altText ?? ""}
             onChange={(e) => onAltTextChange(e.target.value || null)}
+            onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
+            onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
             className="h-8 text-xs"
           />
         </div>

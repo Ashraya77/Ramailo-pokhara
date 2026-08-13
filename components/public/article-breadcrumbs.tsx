@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { ui } from "@/app/lib/ui-text";
+
 type ArticleBreadcrumbsProps = {
   category: {
     name: string;
@@ -9,18 +11,18 @@ type ArticleBreadcrumbsProps = {
 };
 
 const linkClassName =
-  "text-[var(--public-muted)] underline-offset-4 hover:text-[var(--public-accent)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--public-accent)]";
+  "text-[var(--public-muted)] no-underline hover:text-[var(--public-accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--public-accent)]";
 
 export function ArticleBreadcrumbs({
   category,
   title,
 }: ArticleBreadcrumbsProps) {
   return (
-    <nav aria-label="Breadcrumb">
+    <nav aria-label="ब्रेडक्रम्ब">
       <ol className="flex min-w-0 items-center gap-2 text-[0.68rem] font-bold tracking-[0.08em] uppercase">
         <li className="shrink-0">
           <Link href="/" className={linkClassName}>
-            Home
+            {ui.navHome}
           </Link>
         </li>
         <li aria-hidden="true" className="text-[var(--public-border-strong)]">

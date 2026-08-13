@@ -12,21 +12,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { slugify } from "@/app/lib/slug";
+import { slugifyOrFallback } from "@/app/lib/slug";
+import { countGraphemes } from "@/app/lib/text";
 import { apiPost, apiPatch } from "@/lib/api-client";
 import { CategoryListItem } from "@/lib/admin-types";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
+import { InputLanguageToggle } from "@/components/admin/input-language-toggle";
+import {
+  handleNepaliInputBlur,
+  handleNepaliInputCommit,
+} from "@/app/lib/nepali-input";
 
 const categoryFormSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Name must contain at least 2 characters.")
-    .max(80, "Name must contain at most 80 characters."),
+    .refine((value) => countGraphemes(value) >= 2, "Name must contain at least 2 characters.")
+    .refine((value) => countGraphemes(value) <= 80, "Name must contain at most 80 characters."),
   slug: z
     .string()
     .trim()
-    .max(100, "Slug must contain at most 100 characters.")
+    .refine((value) => countGraphemes(value) <= 100, "Slug must contain at most 100 characters.")
     .refine((val) => val === "" || /^[a-z0-9-]+$/.test(val), {
       message: "Slug can only contain lowercase letters, numbers, and hyphens.",
     })
@@ -34,7 +40,7 @@ const categoryFormSchema = z.object({
   description: z
     .string()
     .trim()
-    .max(500, "Description must contain at most 500 characters.")
+    .refine((value) => countGraphemes(value) <= 500, "Description must contain at most 500 characters.")
     .nullable()
     .optional(),
   color: z
@@ -72,8 +78,9 @@ export function CategoryForm({
   onSuccess,
   onCancel,
 }: CategoryFormProps) {
-  const { dictionary } = useAdminI18n();
+  const { dictionary, language } = useAdminI18n();
   const [loading, setLoading] = useState(false);
+  const [nepaliTypingEnabled, setNepaliTypingEnabled] = useState(language === "np");
   const slugManuallyEdited = useRef(mode === "edit");
 
   const form = useForm<CategoryFormValues>({
@@ -102,22 +109,20 @@ export function CategoryForm({
   // Auto-generate slug from name if not manually edited (only in create mode)
   useEffect(() => {
     if (mode === "create" && !slugManuallyEdited.current && watchedName) {
-      setValue("slug", slugify(watchedName), { shouldValidate: true });
+      setValue("slug", slugifyOrFallback(watchedName, "category"), {
+        shouldValidate: true,
+      });
     }
   }, [watchedName, setValue, mode]);
 
+  useEffect(() => {
+    setNepaliTypingEnabled(language === "np");
+  }, [language]);
+
   const onSubmit = async (values: CategoryFormValues) => {
     setLoading(true);
-    const finalSlug = slugify(values.slug ?? values.name);
-
-    if (!finalSlug) {
-      form.setError("slug", {
-        type: "manual",
-        message: "A valid non-empty slug could not be generated.",
-      });
-      setLoading(false);
-      return;
-    }
+    const slugSource = values.slug?.trim() || values.name;
+    const finalSlug = slugifyOrFallback(slugSource, "category");
 
     const payload = {
       ...values,
@@ -159,6 +164,8 @@ export function CategoryForm({
           id="name"
           placeholder={dictionary.categories.namePlaceholder}
           disabled={loading}
+          onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
+          onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
           {...register("name")}
         />
         {errors.name && (
@@ -166,11 +173,18 @@ export function CategoryForm({
         )}
       </div>
 
+      <InputLanguageToggle
+        enabled={nepaliTypingEnabled}
+        onChange={setNepaliTypingEnabled}
+        label={dictionary.articleForm.typingLabel}
+        disabled={loading}
+      />
+
       <div className="space-y-2">
         <Label htmlFor="slug">{dictionary.categories.slug}</Label>
         <Input
           id="slug"
-          placeholder="category-slug"
+          placeholder={dictionary.categories.slugPlaceholder}
           disabled={loading}
           {...register("slug", {
             onChange: () => {
@@ -189,6 +203,8 @@ export function CategoryForm({
           id="description"
           placeholder={dictionary.categories.descriptionPlaceholder}
           disabled={loading}
+          onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
+          onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
           {...register("description")}
         />
         {errors.description && (

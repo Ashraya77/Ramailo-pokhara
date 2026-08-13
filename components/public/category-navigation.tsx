@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Home } from "lucide-react";
 
 export type PublicCategory = {
   name: string;
@@ -10,8 +11,6 @@ type CategoryNavigationProps = {
   categories: readonly PublicCategory[];
 };
 
-const SAFE_HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
-
 export function CategoryNavigation({
   categories,
 }: CategoryNavigationProps) {
@@ -20,31 +19,53 @@ export function CategoryNavigation({
   }
 
   return (
-    <nav aria-label="News categories">
+    <nav
+      aria-label="News categories"
+      className="
+        sticky top-0 z-50
+        bg-[var(--public-accent)]
+        shadow-sm
+      "
+    >
       <div className="public-container overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <ul className="flex min-w-max items-center gap-7 py-3 md:justify-center">
-          {categories.map((category) => {
-            const accent =
-              category.color && SAFE_HEX_COLOR.test(category.color)
-                ? category.color
-                : undefined;
+        <ul className="flex h-12 min-w-max items-stretch md:justify-center">
+          <li className="flex">
+            <Link
+              href="/"
+              aria-label="Home"
+              className="
+                flex h-full items-center justify-center
+                px-4
+                text-white
+                transition-colors duration-200
+                hover:bg-[var(--public-breaking)]
+                focus-visible:bg-[var(--public-breaking)]
+                focus-visible:outline-none
+              "
+            >
+              <Home className="h-4 w-4" strokeWidth={2.2} />
+            </Link>
+          </li>
 
-            return (
-              <li key={category.slug}>
-                <Link
-                  href={`/category/${encodeURIComponent(category.slug)}`}
-                  className="flex items-center gap-2 text-xs font-bold tracking-[0.08em] text-[var(--public-muted)] uppercase underline-offset-4 hover:text-[var(--public-ink)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--public-accent)]"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="h-0.5 w-3 bg-[var(--public-accent)]"
-                    style={accent ? { backgroundColor: accent } : undefined}
-                  />
-                  {category.name}
-                </Link>
-              </li>
-            );
-          })}
+          {categories.map((category) => (
+            <li key={category.slug} className="flex">
+              <Link
+                href={`/category/${encodeURIComponent(category.slug)}`}
+                className="
+                  flex h-full items-center
+                  px-5
+                  text-sm font-semibold
+                  text-white
+                  transition-colors duration-200
+                  hover:bg-[var(--public-breaking)]
+                  focus-visible:bg-[var(--public-breaking)]
+                  focus-visible:outline-none
+                "
+              >
+                {category.name}
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
     </nav>

@@ -100,7 +100,7 @@ export function EditorialEmptyState({
       {action ? (
         <Link
           href={action.href}
-          className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[var(--public-accent)] underline decoration-1 underline-offset-4"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[var(--public-ink)] no-underline hover:text-[var(--public-accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--public-accent)]"
         >
           {action.label}
           <ArrowRightIcon aria-hidden="true" className="size-4" />
@@ -172,7 +172,7 @@ type PaginationProps = {
 };
 
 const paginationLinkClassName =
-  "inline-flex min-h-10 min-w-10 items-center justify-center border border-[var(--public-border-strong)] px-3 text-sm font-bold transition-colors hover:bg-[var(--public-ink)] hover:text-[var(--public-paper)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--public-accent)]";
+  "inline-flex min-h-10 min-w-10 items-center justify-center border border-[var(--public-border-strong)] px-3 text-sm font-bold transition-colors hover:bg-[var(--public-ink)] hover:text-[var(--public-background)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--public-accent)]";
 
 export function Pagination({
   currentPage,
@@ -186,22 +186,22 @@ export function Pagination({
 
   return (
     <nav
-      aria-label="Article pagination"
+      aria-label="समाचार पृष्ठक्रम"
       className="flex flex-col gap-4 border-t border-[var(--public-border-strong)] pt-6 sm:flex-row sm:items-center sm:justify-between"
     >
       <p className="text-xs font-bold tracking-[0.08em] text-[var(--public-muted)] uppercase">
-        Page {currentPage} of {totalPages}
+        पृष्ठ {currentPage} मध्ये {totalPages}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         {currentPage > 1 ? (
           <Link
             href={getPageHref(pathname, currentPage - 1, searchParams)}
-            aria-label={`Go to page ${currentPage - 1}`}
+            aria-label="पृष्ठमा जानुहोस्"
             rel="prev"
             className={paginationLinkClassName}
           >
             <ArrowLeftIcon aria-hidden="true" className="size-4" />
-            <span className="sr-only sm:not-sr-only sm:ml-2">Previous</span>
+            <span className="sr-only sm:not-sr-only sm:ml-2">अघिल्लो</span>
           </Link>
         ) : (
           <span
@@ -209,7 +209,7 @@ export function Pagination({
             className={cn(paginationLinkClassName, "cursor-not-allowed opacity-35")}
           >
             <ArrowLeftIcon aria-hidden="true" className="size-4" />
-            <span className="sr-only sm:not-sr-only sm:ml-2">Previous</span>
+            <span className="sr-only sm:not-sr-only sm:ml-2">अघिल्लो</span>
           </span>
         )}
 
@@ -218,7 +218,7 @@ export function Pagination({
             <Link
               key={item}
               href={getPageHref(pathname, item, searchParams)}
-              aria-label={`Go to page ${item}`}
+              aria-label="पृष्ठमा जानुहोस्"
               aria-current={item === currentPage ? "page" : undefined}
               className={cn(
                 paginationLinkClassName,
@@ -242,11 +242,11 @@ export function Pagination({
         {currentPage < totalPages ? (
           <Link
             href={getPageHref(pathname, currentPage + 1, searchParams)}
-            aria-label={`Go to page ${currentPage + 1}`}
+            aria-label="पृष्ठमा जानुहोस्"
             rel="next"
             className={paginationLinkClassName}
           >
-            <span className="sr-only sm:not-sr-only sm:mr-2">Next</span>
+            <span className="sr-only sm:not-sr-only sm:mr-2">अर्को</span>
             <ArrowRightIcon aria-hidden="true" className="size-4" />
           </Link>
         ) : (
@@ -254,7 +254,7 @@ export function Pagination({
             aria-disabled="true"
             className={cn(paginationLinkClassName, "cursor-not-allowed opacity-35")}
           >
-            <span className="sr-only sm:not-sr-only sm:mr-2">Next</span>
+            <span className="sr-only sm:not-sr-only sm:mr-2">अर्को</span>
             <ArrowRightIcon aria-hidden="true" className="size-4" />
           </span>
         )}
@@ -272,7 +272,7 @@ export function SearchForm({ defaultQuery = "" }: { defaultQuery?: string }) {
       className="flex flex-col gap-3 border-y border-[var(--public-border-strong)] py-5 sm:flex-row"
     >
       <label htmlFor="public-news-search" className="sr-only">
-        Search published news
+        प्रकाशित समाचार खोज्नुहोस्
       </label>
       <Input
         id="public-news-search"
@@ -281,16 +281,16 @@ export function SearchForm({ defaultQuery = "" }: { defaultQuery?: string }) {
         defaultValue={defaultQuery}
         minLength={2}
         maxLength={200}
-        placeholder="Search headlines and summaries"
+        placeholder="शीर्षक र सारांश खोज्नुहोस्"
         className="h-12 rounded-none border-[var(--public-border-strong)] bg-transparent px-4 text-base shadow-none focus-visible:border-[var(--public-accent)] focus-visible:ring-[var(--public-accent)]/20"
       />
       <Button
         type="submit"
         size="lg"
-        className="h-12 rounded-none bg-[var(--public-ink)] px-6 text-[var(--public-paper)] hover:bg-[var(--public-accent)]"
+        className="h-12 rounded-none bg-[var(--public-ink)] px-6 text-[var(--public-background)] hover:bg-[var(--public-accent)]"
       >
         <SearchIcon data-icon="inline-start" />
-        Search news
+        समाचार खोज्नुहोस्
       </Button>
     </form>
   );

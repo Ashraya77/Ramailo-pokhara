@@ -27,17 +27,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
+import { transliterateTrailingRomanWord } from "@/app/lib/nepali-input";
 
 type RichTextEditorProps = {
   content: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  nepaliTypingEnabled?: boolean;
 };
 
 export function RichTextEditor({
   content,
   onChange,
   placeholder,
+  nepaliTypingEnabled = false,
 }: RichTextEditorProps) {
   const { dictionary } = useAdminI18n();
   const editorPlaceholder = placeholder ?? dictionary.editor.placeholder;
@@ -59,12 +62,81 @@ export function RichTextEditor({
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
+    editorProps: {
+      handleKeyDown(_view, event) {
+        if (
+          !nepaliTypingEnabled ||
+          event.isComposing ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.altKey ||
+          (event.key !== " " && !/^[,.;:!?)]$/.test(event.key))
+        ) {
+          return false;
+        }
+
+        const { from, empty } = _view.state.selection;
+
+        if (!empty) {
+          return false;
+        }
+
+        const textBefore = _view.state.doc.textBetween(0, from, "\n", "\0");
+        const match = transliterateTrailingRomanWord(textBefore);
+
+        if (!match) {
+          return false;
+        }
+
+        const replacementFrom = from - (match.end - match.start);
+
+        event.preventDefault();
+        editor
+          ?.chain()
+          .focus()
+          .insertContentAt(
+            { from: replacementFrom, to: from },
+            `${match.replacement}${event.key}`,
+          )
+          .run();
+        return true;
+      },
+      handleDOMEvents: {
+        blur: (_view) => {
+          if (!nepaliTypingEnabled || !editor) {
+            return false;
+          }
+
+          const { from, empty } = _view.state.selection;
+
+          if (!empty) {
+            return false;
+          }
+
+          const textBefore = _view.state.doc.textBetween(0, from, "\n", "\0");
+          const match = transliterateTrailingRomanWord(textBefore);
+
+          if (!match) {
+            return false;
+          }
+
+          const replacementFrom = from - (match.end - match.start);
+
+          editor
+            .chain()
+            .focus()
+            .insertContentAt({ from: replacementFrom, to: from }, match.replacement)
+            .run();
+          return false;
+        },
+      },
+    },
   });
 
   // Sync external content value with editor when it changes
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
+      editor.commands.setContent(content, false);
     }
   }, [content, editor]);
 

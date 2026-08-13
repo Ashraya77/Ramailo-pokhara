@@ -4,9 +4,13 @@ import { listArticles } from "@/app/lib/services/article";
 import { getActivePublicCategories } from "@/app/lib/public-data";
 import { siteConfig } from "@/app/lib/site-config";
 import { getSiteStructuredData } from "@/app/lib/structured-data";
+import { HomeBanner } from "@/components/home/HomeBanner";
 import {
-  HomepageNews,
-  type HomepageNewsData,
+  EditorialCategorySection,
+  MainNewsSection,
+  type CategoryLayout,
+} from "@/components/home/homepage-sections";
+import {
   type PublicArticleSummary,
 } from "@/components/public/homepage-news";
 import type { PublicCategory } from "@/components/public/category-navigation";
@@ -50,13 +54,25 @@ function takeUnique(
   return selected;
 }
 
+function normalizeCategorySlug(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+const orderedCategoryLayouts = [
+  { slugs: ["local", "sthaniya"], layout: "lead-sidebar" as CategoryLayout },
+  { slugs: ["tourism", "paryatan"], layout: "three-column" as CategoryLayout },
+  { slugs: ["business", "byabasaya"], layout: "lead-list" as CategoryLayout },
+  { slugs: ["sports", "khelkud"], layout: "lead-list" as CategoryLayout },
+  { slugs: ["culture", "sanskriti"], layout: "feature-strip" as CategoryLayout },
+  { slugs: ["technology", "tech", "pravidhi"], layout: "dense-grid" as CategoryLayout },
+] as const;
+
 export default async function HomePage() {
-  const [breakingResult, featuredResult, latestResult, popularResult, activeCategories] =
+  const [breakingResult, featuredResult, latestResult, activeCategories] =
     await Promise.all([
       listArticles({ page: 1, limit: 8, breaking: true }, false),
       listArticles({ page: 1, limit: 12, featured: true }, false),
       listArticles({ page: 1, limit: 36 }, false),
-      listArticles({ page: 1, limit: 20, sort: "views", order: "desc" }, false),
       getActivePublicCategories(),
     ]);
 
@@ -70,14 +86,16 @@ export default async function HomePage() {
     })),
   );
 
-  const used = new Set<string>();
+  const latestFeaturedUsed = new Set<string>();
+  const latestFeaturedLead = takeUnique(latestResult.articles, latestFeaturedUsed, 1)[0] ?? null;
+  const latestFeaturedStories = takeUnique(latestResult.articles, latestFeaturedUsed, 3);
+
+  const used = new Set<string>(latestFeaturedUsed);
   const leadPool = [...featuredResult.articles, ...latestResult.articles];
   const lead = takeUnique(leadPool, used, 1)[0] ?? null;
   const secondary = takeUnique(leadPool, used, 3);
   const breaking = takeUnique(breakingResult.articles, used, 6);
   const sidebar = takeUnique(latestResult.articles, used, 5);
-  const latest = takeUnique(latestResult.articles, used, 6);
-  const popular = takeUnique(popularResult.articles, used, 8);
   const categories = categoryResults
     .map(({ category, result }) => {
       const publicCategory: PublicCategory = {
@@ -93,20 +111,44 @@ export default async function HomePage() {
     })
     .filter((section) => section.articles.length > 0);
 
-  const data: HomepageNewsData = {
-    breaking,
-    lead,
-    secondary,
-    sidebar,
-    latest,
-    popular,
-    categories,
-  };
+  const categoriesBySlug = new Map(
+    categories.map((section) => [normalizeCategorySlug(section.category.slug), section] as const),
+  );
+
+  const orderedSections = orderedCategoryLayouts
+    .map(({ slugs, layout }) => {
+      const match = slugs
+        .map((slug) => categoriesBySlug.get(normalizeCategorySlug(slug)))
+        .find(Boolean);
+
+      if (!match) return null;
+      return { ...match, layout };
+    })
+    .filter((section): section is NonNullable<typeof section> => section !== null);
 
   return (
     <>
       <JsonLd data={getSiteStructuredData()} />
-      <HomepageNews data={data} />
+      <HomeBanner
+        featuredArticle={latestFeaturedLead}
+        latestArticles={latestFeaturedStories}
+      />
+      <MainNewsSection
+        breaking={breaking}
+        lead={lead}
+        secondary={secondary}
+        sidebar={sidebar}
+      />
+      <div className="public-container flex flex-col gap-14 py-8 sm:gap-16 sm:py-10 lg:gap-20 lg:py-12">
+        {orderedSections.map(({ category, articles, layout }) => (
+          <EditorialCategorySection
+            key={category.slug}
+            category={category}
+            articles={articles}
+            layout={layout}
+          />
+        ))}
+      </div>
     </>
   );
 }

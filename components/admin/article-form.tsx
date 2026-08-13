@@ -24,24 +24,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { slugify } from "@/app/lib/slug";
+import { countGraphemes, hasVisibleText } from "@/app/lib/text";
+import {
+  createFallbackSlug,
+  slugify,
+  slugifyOrFallback,
+} from "@/app/lib/slug";
 import { apiPost, apiPatch } from "@/lib/api-client";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { ArticleListItem } from "@/lib/admin-types";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
+import { InputLanguageToggle } from "@/components/admin/input-language-toggle";
+import {
+  handleNepaliInputBlur,
+  handleNepaliInputCommit,
+} from "@/app/lib/nepali-input";
 
 // Schema for client-side validation, mapping exactly to backend Zod schemas
 const articleFormSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(5, "Title must contain at least 5 characters.")
-    .max(200, "Title must contain at most 200 characters."),
+    .refine((value) => countGraphemes(value) >= 5, "Title must contain at least 5 characters.")
+    .refine((value) => countGraphemes(value) <= 200, "Title must contain at most 200 characters."),
   slug: z
     .string()
     .trim()
-    .max(220, "Slug must contain at most 220 characters.")
+    .refine((value) => countGraphemes(value) <= 220, "Slug must contain at most 220 characters.")
     .refine((val) => val === "" || /^[a-z0-9-]+$/.test(val), {
       message: "Slug can only contain lowercase letters, numbers, and hyphens.",
     })
@@ -49,19 +59,19 @@ const articleFormSchema = z.object({
   excerpt: z
     .string()
     .trim()
-    .max(500, "Excerpt must contain at most 500 characters.")
+    .refine((value) => countGraphemes(value) <= 500, "Excerpt must contain at most 500 characters.")
     .nullable()
     .optional(),
   content: z
     .string()
-    .refine((val) => val.trim().length > 0 && val !== "<p></p>", {
+    .refine((val) => hasVisibleText(val), {
       message: "Article content cannot be empty.",
     }),
   featuredImage: z.string().trim().nullable().optional(),
   featuredImageAlt: z
     .string()
     .trim()
-    .max(200, "Alt text must contain at most 200 characters.")
+    .refine((value) => countGraphemes(value) <= 200, "Alt text must contain at most 200 characters.")
     .nullable()
     .optional(),
   youtubeUrl: z
@@ -96,13 +106,13 @@ const articleFormSchema = z.object({
   metaTitle: z
     .string()
     .trim()
-    .max(70, "Meta title must contain at most 70 characters.")
+    .refine((value) => countGraphemes(value) <= 70, "Meta title must contain at most 70 characters.")
     .nullable()
     .optional(),
   metaDescription: z
     .string()
     .trim()
-    .max(170, "Meta description must contain at most 170 characters.")
+    .refine((value) => countGraphemes(value) <= 170, "Meta description must contain at most 170 characters.")
     .nullable()
     .optional(),
 });
@@ -124,8 +134,9 @@ type ArticleFormProps = {
 
 export function ArticleForm({ mode, initialData, categories }: ArticleFormProps) {
   const router = useRouter();
-  const { dictionary } = useAdminI18n();
+  const { dictionary, language } = useAdminI18n();
   const [saving, setSaving] = useState(false);
+  const [nepaliTypingEnabled, setNepaliTypingEnabled] = useState(language === "np");
   const slugManuallyEdited = useRef(mode === "edit");
 
   const form = useForm<ArticleFormValues>({
@@ -156,7 +167,6 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
   } = form;
 
   const watchedTitle = watch("title");
-  const watchedSlug = watch("slug");
   const watchedMetaTitle = watch("metaTitle");
   const watchedMetaDescription = watch("metaDescription");
   const statusItems = [
@@ -177,13 +187,21 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
   // Auto-generate slug from title in create mode
   useEffect(() => {
     if (mode === "create" && !slugManuallyEdited.current && watchedTitle) {
-      setValue("slug", slugify(watchedTitle), { shouldValidate: true });
+      setValue("slug", slugifyOrFallback(watchedTitle, "news"), {
+        shouldValidate: true,
+      });
     }
   }, [watchedTitle, setValue, mode]);
 
+  useEffect(() => {
+    setNepaliTypingEnabled(language === "np");
+  }, [language]);
+
   const handleRegenerateSlug = () => {
     if (watchedTitle) {
-      setValue("slug", slugify(watchedTitle), { shouldValidate: true });
+      setValue("slug", slugifyOrFallback(watchedTitle, "news"), {
+        shouldValidate: true,
+      });
     } else {
       toast.error(dictionary.articleForm.enterTitleFirst);
     }
@@ -191,16 +209,10 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
 
   const onSubmit = async (values: ArticleFormValues) => {
     setSaving(true);
-    const finalSlug = slugify(values.slug ?? values.title);
-
-    if (!finalSlug) {
-      form.setError("slug", {
-        type: "manual",
-        message: "A valid non-empty slug could not be generated.",
-      });
-      setSaving(false);
-      return;
-    }
+    const slugSource = values.slug?.trim() || values.title;
+    const finalSlug =
+      slugify(slugSource) ||
+      (mode === "edit" && initialData?.slug ? initialData.slug : createFallbackSlug("news"));
 
     const payload = {
       ...values,
@@ -303,6 +315,8 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   id="title"
                   placeholder={dictionary.articleForm.titlePlaceholder}
                   disabled={saving}
+                  onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
+                  onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
                   {...register("title")}
                 />
                 {errors.title && (
@@ -310,13 +324,20 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                 )}
               </div>
 
+              <InputLanguageToggle
+                enabled={nepaliTypingEnabled}
+                onChange={setNepaliTypingEnabled}
+                label={dictionary.articleForm.typingLabel}
+                disabled={saving}
+              />
+
               {/* Slug */}
               <div className="space-y-2">
                 <Label htmlFor="slug">{dictionary.articleForm.slug}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="slug"
-                    placeholder="article-url-slug"
+                    placeholder={dictionary.articleForm.slugPlaceholder}
                     disabled={saving}
                     {...register("slug", {
                       onChange: () => {
@@ -349,6 +370,8 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   placeholder={dictionary.articleForm.excerptPlaceholder}
                   className="h-20 resize-none"
                   disabled={saving}
+                  onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
+                  onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
                   {...register("excerpt")}
                 />
                 {errors.excerpt && (
@@ -362,6 +385,7 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                 <RichTextEditor
                   content={watch("content")}
                   onChange={(html) => setValue("content", html, { shouldValidate: true })}
+                  nepaliTypingEnabled={nepaliTypingEnabled}
                 />
                 {errors.content && (
                   <p className="text-xs text-destructive">{errors.content.message}</p>
@@ -494,13 +518,14 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                 onChange={(url) => setValue("featuredImage", url)}
                 altText={watch("featuredImageAlt")}
                 onAltTextChange={(alt) => setValue("featuredImageAlt", alt)}
+                nepaliTypingEnabled={nepaliTypingEnabled}
               />
 
               <div className="space-y-2">
                 <Label htmlFor="youtubeUrl">{dictionary.articleForm.youtubeUrl}</Label>
                 <Input
                   id="youtubeUrl"
-                  placeholder="https://www.youtube.com/watch?v=..."
+                  placeholder={dictionary.articleForm.youtubeUrlPlaceholder}
                   disabled={saving}
                   {...register("youtubeUrl")}
                 />
@@ -525,16 +550,20 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   <Label htmlFor="metaTitle">{dictionary.articleForm.metaTitle}</Label>
                   <span
                     className={`text-[10px] font-medium ${
-                      (watchedMetaTitle?.length ?? 0) > 60 ? "text-amber-600" : "text-muted-foreground"
+                      countGraphemes(watchedMetaTitle ?? "") > 60
+                        ? "text-amber-600"
+                        : "text-muted-foreground"
                     }`}
                   >
-                    {watchedMetaTitle?.length ?? 0} / 70 chars
+                    {countGraphemes(watchedMetaTitle ?? "")} / 70 {dictionary.common.characters}
                   </span>
                 </div>
                 <Input
                   id="metaTitle"
                   placeholder={dictionary.articleForm.metaTitlePlaceholder}
                   disabled={saving}
+                  onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
+                  onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
                   {...register("metaTitle")}
                 />
                 {errors.metaTitle && (
@@ -549,10 +578,12 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   </Label>
                   <span
                     className={`text-[10px] font-medium ${
-                      (watchedMetaDescription?.length ?? 0) > 160 ? "text-amber-600" : "text-muted-foreground"
+                      countGraphemes(watchedMetaDescription ?? "") > 160
+                        ? "text-amber-600"
+                        : "text-muted-foreground"
                     }`}
                   >
-                    {watchedMetaDescription?.length ?? 0} / 170 chars
+                    {countGraphemes(watchedMetaDescription ?? "")} / 170 {dictionary.common.characters}
                   </span>
                 </div>
                 <Textarea
@@ -560,6 +591,8 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   placeholder={dictionary.articleForm.metaDescriptionPlaceholder}
                   className="h-20 resize-none text-xs"
                   disabled={saving}
+                  onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
+                  onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
                   {...register("metaDescription")}
                 />
                 {errors.metaDescription && (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { siteConfig } from "@/app/lib/site-config";
+import { ui } from "@/app/lib/ui-text";
 import type { PublicCategory } from "@/components/public/category-navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,19 +35,19 @@ export function MobileNavigation({ categories }: MobileNavigationProps) {
             variant="ghost"
             size="icon"
             className="rounded-none border-l border-[var(--public-border)] lg:hidden"
-            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={open ? ui.navClose : ui.navOpen}
           />
         }
       >
         <MenuIcon />
       </SheetTrigger>
-      <SheetContent side="right" className="public-shell w-[88vw] max-w-sm rounded-none bg-[var(--public-paper)] p-0">
+      <SheetContent side="right" className="public-shell w-[88vw] max-w-sm rounded-none bg-[var(--public-background)] p-0">
         <SheetHeader className="border-t-[3px] border-[var(--public-accent)] border-b border-[var(--public-border-strong)] px-6 py-7">
           <SheetTitle className="font-editorial text-2xl font-black">{siteConfig.name}</SheetTitle>
-          <SheetDescription className="text-[var(--public-muted)]">Independent news from Pokhara.</SheetDescription>
+          <SheetDescription className="text-[var(--public-muted)]">{ui.tagline}</SheetDescription>
         </SheetHeader>
-        <nav aria-label="Mobile navigation" className="overflow-y-auto px-6 py-5">
-          <p className="editorial-kicker mb-3">Navigate</p>
+        <nav aria-label={ui.navMobile} className="overflow-y-auto px-6 py-5">
+          <p className="editorial-kicker mb-3">{ui.navNavigate}</p>
           <ul className="flex flex-col">
             {siteConfig.navigation.map((item) => (
               <li key={item.href}>

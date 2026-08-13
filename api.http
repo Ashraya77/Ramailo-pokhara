@@ -1,0 +1,173 @@
+###############################################################################
+# RAMAILO POKHARA API SEED / TEST
+###############################################################################
+
+@baseUrl = http://127.0.0.1:3000
+@json = application/json
+@adminEmail = {{$dotenv ADMIN_EMAIL}}
+@adminPassword = {{$dotenv ADMIN_PASSWORD}}
+
+###############################################################################
+# AUTH
+###############################################################################
+
+### Get NextAuth CSRF token
+# @name authCsrf
+GET {{baseUrl}}/api/auth/csrf
+
+### Login as admin
+# @name adminLogin
+POST {{baseUrl}}/api/auth/callback/credentials
+Content-Type: application/x-www-form-urlencoded
+X-Auth-Return-Redirect: 1
+
+csrfToken={{authCsrf.response.body.$.csrfToken}}&email={{adminEmail}}&password={{adminPassword}}&callbackUrl={{baseUrl}}/admin&json=true
+
+### Confirm admin session
+GET {{baseUrl}}/api/auth/session
+
+###############################################################################
+# SAFE REPEATABLE VERIFICATION
+###############################################################################
+
+### Active categories
+# @name activeCategories
+GET {{baseUrl}}/api/categories?active=true
+
+### Public articles
+GET {{baseUrl}}/api/articles?limit=50&sort=publishedAt&order=desc
+
+### Featured public articles
+GET {{baseUrl}}/api/articles?featured=true&limit=10
+
+### Breaking public articles
+GET {{baseUrl}}/api/articles?breaking=true&limit=10
+
+### Tourism category public articles
+GET {{baseUrl}}/api/articles?category=paryatan&limit=10
+
+### Admin article list
+GET {{baseUrl}}/api/articles?admin=true&limit=50
+
+### Published article slug lookup
+GET {{baseUrl}}/api/articles/slug/fewa-kinarma-bihanai-dekhi-paryatakko-chahalpahal
+
+###############################################################################
+# MANUAL SEED EXAMPLES
+# The full idempotent bulk seed was executed with scripts/seed_api_content.py
+###############################################################################
+
+### Create category - स्वास्थ्य
+POST {{baseUrl}}/api/categories
+Content-Type: {{json}}
+
+{
+  "name": "स्वास्थ्य",
+  "slug": "swasthya",
+  "description": "स्वास्थ्य सचेतना, पोषण, व्यायाम, सामुदायिक स्वास्थ्य कार्यक्रम र सुरक्षित जीवनशैलीसम्बन्धी सामग्री।",
+  "color": "#0F766E",
+  "isActive": true,
+  "sortOrder": 10
+}
+
+### Upload sample image
+# @name uploadSeedImage
+POST {{baseUrl}}/api/uploads/images
+Content-Type: multipart/form-data; boundary=RamailoBoundary
+
+--RamailoBoundary
+Content-Disposition: form-data; name="file"; filename="fewa-lake-morning.png"
+Content-Type: image/png
+
+< ./tmp/api-seed-images/fewa-lake-morning.png
+--RamailoBoundary--
+
+### Create sample published article
+POST {{baseUrl}}/api/articles
+Content-Type: {{json}}
+
+{
+  "title": "फेवाताल किनारमा बिहानैदेखि पर्यटकको चहलपहल",
+  "slug": "fewa-kinarma-bihanai-dekhi-paryatakko-chahalpahal",
+  "excerpt": "सिजनको सुरुवातसँगै फेवाताल किनारमा बिहानैदेखि डुंगा सयर, कफी र पैदल यात्रामा जुट्नेको संख्या बढेको छ।",
+  "content": "<p>पोखराको फेवाताल किनारमा पछिल्ला केही दिनयता बिहानको चहलपहल उल्लेख्य रूपमा बढेको स्थानीय व्यवसायीहरूले बताएका छन्।</p><h2>बिहानी पर्यटनको नयाँ लय</h2><p>लेकसाइड क्षेत्रमा बिहानैबाट डुंगा सयर, साइकल र पैदल घुमघाम गर्ने स्वदेशी पर्यटक देखिन थालेपछि क्याफे तथा नास्ता पसलमा पनि ग्राहक बढेका छन्।</p><p>ताल किनारमा सफाइ र बस्ने स्थान व्यवस्थापन सुधारिएको कारण परिवारसहित आउने आन्तरिक पर्यटकलाई सहज भएको व्यवसायीहरूको भनाइ छ।</p><p>पर्यटन व्यवसायीहरूले नियमित सांगीतिक प्रस्तुति, शान्त वातावरण र सुरक्षित पैदल मार्ग कायम राख्न सके फेवाताल किनारको बिहान अझ आकर्षक बन्ने बताएका छन्।</p>",
+  "featuredImage": "{{uploadSeedImage.response.body.$.data.url}}",
+  "featuredImageAlt": "फेवाताल किनारमा बिहान घुमिरहेका पर्यटक",
+  "status": "PUBLISHED",
+  "isFeatured": true,
+  "isBreaking": true,
+  "categoryId": "{{activeCategories.response.body.$.data[1].id}}",
+  "metaTitle": "फेवाताल किनारमा बिहानैदेखि पर्यटकको चहलपहल",
+  "metaDescription": "पोखराको फेवाताल किनारमा बिहानै डुंगा सयर, पैदल यात्रा र क्याफे गतिविधिमा सहभागी हुने आन्तरिक पर्यटकको संख्या बढेको छ।",
+  "publishedAt": "2026-08-12T08:10:00+05:45"
+}
+
+###############################################################################
+# EXPECTED ERROR TESTS
+###############################################################################
+
+### Unauthorized admin article list
+GET {{baseUrl}}/api/articles?admin=true&limit=5
+Cookie:
+
+### Duplicate slug
+POST {{baseUrl}}/api/articles
+Content-Type: {{json}}
+
+{
+  "title": "फेवाताल किनारमा बिहानैदेखि पर्यटकको चहलपहल",
+  "slug": "fewa-kinarma-bihanai-dekhi-paryatakko-chahalpahal",
+  "excerpt": "डुप्लिकेट स्लग त्रुटि परीक्षण।",
+  "content": "<p>यो डुप्लिकेट स्लग त्रुटि परीक्षणका लागि मात्र हो।</p>",
+  "status": "PUBLISHED",
+  "isFeatured": false,
+  "isBreaking": false,
+  "categoryId": "{{activeCategories.response.body.$.data[0].id}}",
+  "metaTitle": "डुप्लिकेट स्लग परीक्षण",
+  "metaDescription": "यो डुप्लिकेट स्लग परीक्षणका लागि तयार गरिएको अनुरोध हो।"
+}
+
+### Missing title
+POST {{baseUrl}}/api/articles
+Content-Type: {{json}}
+
+{
+  "title": "",
+  "slug": "missing-title-check",
+  "excerpt": "शीर्षक बिना लेख लेख्न नहुने परीक्षण।",
+  "content": "<p>यो अनुरोध असफल हुनुपर्छ।</p>",
+  "status": "PUBLISHED",
+  "isFeatured": false,
+  "isBreaking": false,
+  "categoryId": "{{activeCategories.response.body.$.data[0].id}}",
+  "metaTitle": "शीर्षक बिना परीक्षण",
+  "metaDescription": "शीर्षक खाली हुँदा API ले validation error फर्काउनुपर्छ।"
+}
+
+### Invalid category ID
+POST {{baseUrl}}/api/articles
+Content-Type: {{json}}
+
+{
+  "title": "अमान्य वर्ग आईडी परीक्षण",
+  "slug": "amanaya-varga-id-parikshan",
+  "excerpt": "अमान्य वर्ग आईडी प्रयोग गर्दा अनुरोध असफल हुनुपर्छ।",
+  "content": "<p>यो अनुरोध अमान्य वर्ग आईडी परीक्षणका लागि हो।</p>",
+  "status": "PUBLISHED",
+  "isFeatured": false,
+  "isBreaking": false,
+  "categoryId": "invalid-category-id",
+  "metaTitle": "अमान्य वर्ग आईडी परीक्षण",
+  "metaDescription": "अमान्य वर्ग आईडी दिँदा API ले त्रुटि फर्काउने जाँच।"
+}
+
+### Invalid image type
+POST {{baseUrl}}/api/uploads/images
+Content-Type: multipart/form-data; boundary=RamailoBadUpload
+
+--RamailoBadUpload
+Content-Disposition: form-data; name="file"; filename="not-an-image.txt"
+Content-Type: text/plain
+
+This should fail.
+--RamailoBadUpload--

@@ -139,32 +139,34 @@
   }
 
   .public-shell {
-    --background: var(--public-paper);
+    --background: var(--public-background);
     --foreground: var(--public-ink);
-    --card: var(--public-paper);
+    --card: var(--public-background);
     --card-foreground: var(--public-ink);
     --primary: var(--public-accent);
-    --primary-foreground: #fffaf4;
-    --secondary: #eee9df;
+    --primary-foreground: #ffffff;
+    --secondary: var(--public-surface);
     --secondary-foreground: var(--public-ink);
-    --muted: #e9e4da;
+    --muted: var(--public-surface);
     --muted-foreground: var(--public-muted);
-    --accent: #eee9df;
+    --accent: var(--public-surface);
     --accent-foreground: var(--public-accent-dark);
-    --destructive: var(--public-accent);
+    --destructive: var(--public-breaking);
     --border: var(--public-border);
     --ring: var(--public-accent);
-    --public-paper: #f7f3ea;
-    --public-paper-deep: #eee9df;
-    --public-ink: #171614;
-    --public-muted: #69645d;
-    --public-accent: #c42d20;
-    --public-accent-dark: #8f1f17;
-    --public-border: #d8d1c5;
-    --public-border-strong: #292623;
-    --font-editorial: Georgia, "Times New Roman", "Noto Serif Devanagari",
+    --public-background: #ffffff;
+    --public-ink: #111111;
+    --public-muted: #6b7280;
+    --public-accent: #155eef;
+    --public-accent-dark: #0b2a5b;
+    --public-border: #e5e7eb;
+    --public-border-strong: #d1d5db;
+    --public-surface: #f7f8fa;
+    --public-breaking: #dc2626;
+    --font-sans: var(--font-nepali), var(--font-geist-sans), "Nirmala UI", sans-serif;
+    --font-editorial: var(--font-nepali), Georgia, "Times New Roman", "Noto Serif Devanagari",
       "Nirmala UI", serif;
-    background-color: var(--public-paper);
+    background-color: var(--public-background);
     color: var(--public-ink);
   }
 
@@ -238,8 +240,7 @@
   }
 
   .editorial-category-link:hover {
-    text-decoration: underline;
-    text-underline-offset: 0.2rem;
+    color: var(--public-accent-dark);
   }
 
   .editorial-date {
@@ -269,14 +270,12 @@
 
   .editorial-lead-title a,
   .editorial-card-title a {
-    text-decoration-color: var(--public-accent);
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.25rem;
+    transition: color 0.2s ease;
   }
 
   .editorial-lead-title a:hover,
   .editorial-card-title a:hover {
-    text-decoration-line: underline;
+    color: var(--public-accent);
   }
 
   .editorial-rank {
@@ -291,8 +290,8 @@
   .breaking-strip {
     overflow: hidden;
     border-bottom: 1px solid var(--public-border-strong);
-    background: var(--public-accent);
-    color: #fffaf4;
+    background: var(--public-breaking);
+    color: #ffffff;
   }
 
   .breaking-label {
@@ -317,11 +316,11 @@
     padding: clamp(1.25rem, 3vw, 2.25rem);
     border-top: 3px solid var(--public-accent);
     border-bottom: 1px solid var(--public-border-strong);
-    background: var(--public-paper-deep);
+    background: var(--public-surface);
   }
 
   .image-placeholder {
-    background-color: var(--public-paper-deep);
+    background-color: var(--public-surface);
     background-image:
       linear-gradient(var(--public-border) 1px, transparent 1px),
       linear-gradient(90deg, var(--public-border) 1px, transparent 1px);
