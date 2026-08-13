@@ -210,7 +210,7 @@ export function handleNepaliInputCommit(
 ) {
   if (
     !enabled ||
-    event.isComposing ||
+    event.nativeEvent.isComposing ||
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||

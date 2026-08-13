@@ -105,6 +105,14 @@ export function CategoryForm({
 
   const watchedName = watch("name");
   const watchedColor = watch("color");
+  const {
+    onBlur: onNameBlur,
+    ...nameField
+  } = register("name");
+  const {
+    onBlur: onDescriptionBlur,
+    ...descriptionField
+  } = register("description");
 
   // Auto-generate slug from name if not manually edited (only in create mode)
   useEffect(() => {
@@ -165,8 +173,11 @@ export function CategoryForm({
           placeholder={dictionary.categories.namePlaceholder}
           disabled={loading}
           onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
-          onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
-          {...register("name")}
+          onBlur={(event) => {
+            onNameBlur(event);
+            handleNepaliInputBlur(event, nepaliTypingEnabled);
+          }}
+          {...nameField}
         />
         {errors.name && (
           <p className="text-xs text-destructive">{errors.name.message}</p>
@@ -204,8 +215,11 @@ export function CategoryForm({
           placeholder={dictionary.categories.descriptionPlaceholder}
           disabled={loading}
           onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
-          onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
-          {...register("description")}
+          onBlur={(event) => {
+            onDescriptionBlur(event);
+            handleNepaliInputBlur(event, nepaliTypingEnabled);
+          }}
+          {...descriptionField}
         />
         {errors.description && (
           <p className="text-xs text-destructive">{errors.description.message}</p>

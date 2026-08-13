@@ -136,7 +136,7 @@ export function RichTextEditor({
   // Sync external content value with editor when it changes
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content, false);
+      editor.commands.setContent(content, { emitUpdate: false });
     }
   }, [content, editor]);
 

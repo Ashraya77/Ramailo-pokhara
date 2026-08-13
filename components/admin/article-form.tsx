@@ -169,6 +169,22 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
   const watchedTitle = watch("title");
   const watchedMetaTitle = watch("metaTitle");
   const watchedMetaDescription = watch("metaDescription");
+  const {
+    onBlur: onTitleBlur,
+    ...titleField
+  } = register("title");
+  const {
+    onBlur: onExcerptBlur,
+    ...excerptField
+  } = register("excerpt");
+  const {
+    onBlur: onMetaTitleBlur,
+    ...metaTitleField
+  } = register("metaTitle");
+  const {
+    onBlur: onMetaDescriptionBlur,
+    ...metaDescriptionField
+  } = register("metaDescription");
   const statusItems = [
     { value: "DRAFT", label: dictionary.status.draft },
     { value: "PUBLISHED", label: dictionary.status.published },
@@ -316,8 +332,11 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   placeholder={dictionary.articleForm.titlePlaceholder}
                   disabled={saving}
                   onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
-                  onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
-                  {...register("title")}
+                  onBlur={(event) => {
+                    onTitleBlur(event);
+                    handleNepaliInputBlur(event, nepaliTypingEnabled);
+                  }}
+                  {...titleField}
                 />
                 {errors.title && (
                   <p className="text-xs text-destructive">{errors.title.message}</p>
@@ -371,8 +390,11 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   className="h-20 resize-none"
                   disabled={saving}
                   onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
-                  onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
-                  {...register("excerpt")}
+                  onBlur={(event) => {
+                    onExcerptBlur(event);
+                    handleNepaliInputBlur(event, nepaliTypingEnabled);
+                  }}
+                  {...excerptField}
                 />
                 {errors.excerpt && (
                   <p className="text-xs text-destructive">{errors.excerpt.message}</p>
@@ -563,8 +585,11 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   placeholder={dictionary.articleForm.metaTitlePlaceholder}
                   disabled={saving}
                   onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
-                  onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
-                  {...register("metaTitle")}
+                  onBlur={(event) => {
+                    onMetaTitleBlur(event);
+                    handleNepaliInputBlur(event, nepaliTypingEnabled);
+                  }}
+                  {...metaTitleField}
                 />
                 {errors.metaTitle && (
                   <p className="text-xs text-destructive">{errors.metaTitle.message}</p>
@@ -592,8 +617,11 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
                   className="h-20 resize-none text-xs"
                   disabled={saving}
                   onKeyDown={(event) => handleNepaliInputCommit(event, nepaliTypingEnabled)}
-                  onBlur={(event) => handleNepaliInputBlur(event, nepaliTypingEnabled)}
-                  {...register("metaDescription")}
+                  onBlur={(event) => {
+                    onMetaDescriptionBlur(event);
+                    handleNepaliInputBlur(event, nepaliTypingEnabled);
+                  }}
+                  {...metaDescriptionField}
                 />
                 {errors.metaDescription && (
                   <p className="text-xs text-destructive">{errors.metaDescription.message}</p>
