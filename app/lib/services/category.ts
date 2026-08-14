@@ -1,5 +1,6 @@
 import type { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/app/lib/prisma";
+import { publicArticleSummarySelect } from "@/app/lib/services/article";
 import type {
   CategoryListQuery,
   CreateCategoryInput,
@@ -21,7 +22,6 @@ async function createUniqueCategorySlug(baseSlug: string): Promise<string> {
   let slug = baseSlug;
   let counter = 1;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const conflict = await prisma.category.findFirst({
       where: { slug },
@@ -71,6 +71,42 @@ export async function listActivePublicCategories() {
       description: true,
       color: true,
       updatedAt: true,
+    },
+  });
+}
+
+export async function listActivePublicCategoriesWithArticles(limitPerCategory = 6) {
+  const now = new Date();
+
+  return prisma.category.findMany({
+    where: {
+      isActive: true,
+      articles: {
+        some: {
+          publishedAt: { not: null, lte: now },
+          status: "PUBLISHED",
+          author: { isActive: true },
+        },
+      },
+    },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      color: true,
+      updatedAt: true,
+      articles: {
+        where: {
+          status: "PUBLISHED",
+          publishedAt: { not: null, lte: now },
+          author: { isActive: true },
+        },
+        orderBy: { publishedAt: "desc" },
+        take: limitPerCategory,
+        select: publicArticleSummarySelect,
+      },
     },
   });
 }

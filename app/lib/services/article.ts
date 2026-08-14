@@ -21,7 +21,7 @@ const safeAuthorSelect = {
   name: true,
 } satisfies Prisma.UserSelect;
 
-const articleListSelect = {
+export const publicArticleSummarySelect = {
   id: true,
   title: true,
   slug: true,
@@ -41,6 +41,8 @@ const articleListSelect = {
   category: { select: safeCategorySelect },
   author: { select: safeAuthorSelect },
 } satisfies Prisma.ArticleSelect;
+
+const articleListSelect = publicArticleSummarySelect;
 
 const articleDetailSelect = {
   ...articleListSelect,
@@ -68,7 +70,6 @@ async function createUniqueArticleSlug(baseSlug: string): Promise<string> {
   // Keep generated slugs stable and URL-safe while resolving collisions.
   // Example: `news-20260813-abc123-2`
   // This only applies on create; updates still preserve explicit conflicts.
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const conflict = await prisma.article.findFirst({
       where: { slug },
