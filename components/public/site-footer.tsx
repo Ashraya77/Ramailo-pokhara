@@ -107,8 +107,8 @@ export async function SiteFooter({ categories }: SiteFooterProps) {
   return (
     <footer className="mt-auto border-t-4 border-[var(--public-accent)] bg-[var(--public-ink)] text-[var(--public-background)]">
       <div className="public-container py-12 sm:py-16">
-        <div className="grid gap-10 text-center md:grid-cols-2 md:text-left xl:grid-cols-5">
-          <section className="flex flex-col items-center gap-5 md:items-start xl:pr-6 xl:border-r xl:border-white/10">
+        <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-2 md:gap-10 md:text-left xl:grid-cols-5">
+          <section className="col-span-2 flex flex-col items-center gap-5 md:col-span-1 md:items-start xl:pr-6 xl:border-r xl:border-white/10">
             <div>
               <p className="font-devanagari text-2xl font-black tracking-[-0.03em] text-white sm:text-3xl">
                 रमाइलो पोखरा<span className="text-[var(--public-accent)]">.com</span>
