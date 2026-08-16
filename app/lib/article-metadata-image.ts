@@ -1,25 +1,5 @@
+import { isSafeLocalArticleImagePath } from "@/app/lib/article-image-path";
 import { siteConfig } from "@/app/lib/site-config";
-
-function isSafeLocalArticleImage(value: string): boolean {
-  const path = value.split(/[?#]/, 1)[0];
-
-  if (!/^\/uploads\/articles\/[^/]+$/.test(path) || value.includes("\\")) {
-    return false;
-  }
-
-  try {
-    const decodedPath = decodeURIComponent(path);
-
-    return (
-      !decodedPath.includes("\\") &&
-      !decodedPath
-        .split("/")
-        .some((segment) => segment === "." || segment === "..")
-    );
-  } catch {
-    return false;
-  }
-}
 
 export function normalizeArticleMetadataImage(
   value: string | null | undefined,
@@ -30,7 +10,7 @@ export function normalizeArticleMetadataImage(
     return null;
   }
 
-  if (isSafeLocalArticleImage(image)) {
+  if (isSafeLocalArticleImagePath(image)) {
     return new URL(image, siteConfig.url);
   }
 

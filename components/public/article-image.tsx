@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { isSafeLocalArticleImagePath } from "@/app/lib/article-image-path";
 import { cn } from "@/lib/utils";
 
 type ArticleImageProps = {
@@ -12,22 +13,7 @@ type ArticleImageProps = {
 };
 
 function normalizeLocalImage(value: string): string | null {
-  const path = value.split(/[?#]/, 1)[0];
-
-  if (!/^\/uploads\/articles\/[^/]+$/.test(path) || value.includes("\\")) {
-    return null;
-  }
-
-  try {
-    const decodedPath = decodeURIComponent(path);
-
-    return decodedPath.includes("\\") ||
-      decodedPath.split("/").some((segment) => segment === "." || segment === "..")
-      ? null
-      : value;
-  } catch {
-    return null;
-  }
+  return isSafeLocalArticleImagePath(value) ? value : null;
 }
 
 function normalizeExternalImage(value: string): string | null {

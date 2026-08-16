@@ -1,13 +1,11 @@
 import { ArticleStatus } from "@/app/generated/prisma/client";
+import { isSafeLocalArticleImagePath } from "@/app/lib/article-image-path";
 import { countGraphemes, hasVisibleText } from "@/app/lib/text";
 import { z } from "zod";
 
 function isAcceptedImageLocation(value: string): boolean {
-  if (value.startsWith("/uploads/")) {
-    return (
-      !value.includes("\\") &&
-      !value.split("/").some((segment) => segment === "..")
-    );
+  if (isSafeLocalArticleImagePath(value)) {
+    return true;
   }
 
   try {
