@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -30,15 +29,14 @@ class AuthController extends Controller
 
         $user = User::where('email', $email)->first();
 
-        if (
-            !$user ||
-            !$user->isActive() ||
-            !$user->isAdmin() ||
-            !Hash::check($credentials['password'], $user->password_hash)
-        ) {
-            throw ValidationException::withMessages([
-                'email' => ['Invalid credentials.'],
-            ]);
+        if ($user === null || ! Hash::check($credentials['password'], $user->password_hash) || ! $user->isActive() || ! $user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => 'Invalid credentials.',
+                ],
+            ], 401);
         }
 
         $user->update([

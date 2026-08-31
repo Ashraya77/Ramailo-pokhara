@@ -23,7 +23,6 @@ return new class extends Migration
 
             $table->timestamps(3);
 
-            $table->index('email');
         });
     }
 

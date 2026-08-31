@@ -22,7 +22,6 @@ return new class extends Migration
 
             $table->timestamps(3);
 
-            $table->index('slug');
             $table->index(['is_active', 'sort_order']);
         });
     }
