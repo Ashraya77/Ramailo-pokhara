@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { after, connection } from "next/server";
+import { connection } from "next/server";
 
 import { normalizeArticleMetadataImage } from "@/app/lib/article-metadata-image";
-import { incrementPublishedArticleViews } from "@/app/lib/services/article";
+
 import { siteConfig } from "@/app/lib/site-config";
 import { slugify } from "@/app/lib/slug";
 import {
@@ -170,13 +169,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     },
   ]);
 
-  after(async () => {
-    try {
-      await incrementPublishedArticleViews(article.id);
-    } catch (error: unknown) {
-      console.error("Failed to record article view", error);
-    }
-  });
+
 
   return (
     <article className="bg-background">

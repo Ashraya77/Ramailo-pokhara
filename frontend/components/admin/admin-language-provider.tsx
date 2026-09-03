@@ -7,7 +7,7 @@ import {
   getAdminDictionary,
   type AdminDictionary,
   type AdminLanguage,
-} from "@/frontend/lib/admin-i18n";
+} from "@/lib/admin-i18n";
 
 type AdminLanguageContextValue = {
   language: AdminLanguage;

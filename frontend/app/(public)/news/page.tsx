@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { listArticles } from "@/app/lib/services/article";
+import { listPublicArticles } from "@/app/lib/services/laravel-public";
 import { siteConfig } from "@/app/lib/site-config";
 import {
   ArticleListingGrid,
@@ -55,14 +55,13 @@ export default async function NewsPage({
 }: NewsPageProps) {
   const resolvedSearchParams = await searchParams;
   const page = parsePageParam(resolvedSearchParams.page);
-  const result = await listArticles(
+  const result = await listPublicArticles(
     {
       page,
       limit: ARTICLES_PER_PAGE,
       sort: "publishedAt",
       order: "desc",
-    },
-    false,
+    }
   );
 
   return (

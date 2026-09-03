@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/frontend/lib/utils";
+import { cn } from "@/lib/utils";
 
 type InputLanguageToggleProps = {
   enabled: boolean;

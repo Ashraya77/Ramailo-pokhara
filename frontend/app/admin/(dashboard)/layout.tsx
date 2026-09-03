@@ -7,7 +7,7 @@ import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminLanguageProvider } from "@/components/admin/admin-language-provider";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { LogoutButton } from "@/components/admin/logout-button";
-import { getAdminI18n } from "@/frontend/lib/admin-i18n-server";
+import { getAdminI18n } from "@/lib/admin-i18n-server";
 
 export const metadata: Metadata = {
   title: {

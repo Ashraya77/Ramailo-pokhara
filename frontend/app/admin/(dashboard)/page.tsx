@@ -10,12 +10,17 @@ import {
 } from "lucide-react";
 
 import { auth } from "@/auth";
-import { prisma } from "@/app/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getAdminI18n } from "@/frontend/lib/admin-i18n-server";
-import type { AdminDictionary } from "@/frontend/lib/admin-i18n";
+import type {
+  ArticleListItem,
+  ArticleListMeta,
+  CategoryListItem,
+} from "@/lib/admin-types";
+import { get as apiGet } from "@/lib/apiClient";
+import { getAdminI18n } from "@/lib/admin-i18n-server";
+import type { AdminDictionary } from "@/lib/admin-i18n";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -54,35 +59,50 @@ export default async function AdminDashboardPage() {
     getAdminI18n(),
   ]);
 
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (
+    !session?.user ||
+    session.user.role !== "ADMIN" ||
+    !session.accessToken
+  ) {
     redirect("/admin/login");
   }
 
-  // Fetch metrics and recent articles in parallel directly from DB
+  const requestOptions = {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+    cache: "no-store" as const,
+  };
+
   const [
-    totalArticles,
-    publishedArticles,
-    draftArticles,
-    totalCategories,
-    recentArticles,
+    articlesResponse,
+    publishedResponse,
+    draftResponse,
+    categoriesResponse,
   ] = await Promise.all([
-    prisma.article.count(),
-    prisma.article.count({ where: { status: "PUBLISHED" } }),
-    prisma.article.count({ where: { status: "DRAFT" } }),
-    prisma.category.count(),
-    prisma.article.findMany({
-      take: 5,
-      orderBy: { updatedAt: "desc" },
-      include: {
-        category: {
-          select: {
-            name: true,
-            color: true,
-          },
-        },
-      },
-    }),
+    apiGet<{
+      success: true;
+      data: ArticleListItem[];
+      meta: ArticleListMeta;
+    }>("/api/articles?admin=true&limit=5&sort=updatedAt&order=desc", requestOptions),
+    apiGet<{
+      success: true;
+      data: ArticleListItem[];
+      meta: ArticleListMeta;
+    }>("/api/articles?admin=true&status=PUBLISHED&limit=1", requestOptions),
+    apiGet<{
+      success: true;
+      data: ArticleListItem[];
+      meta: ArticleListMeta;
+    }>("/api/articles?admin=true&status=DRAFT&limit=1", requestOptions),
+    apiGet<{ success: true; data: CategoryListItem[] }>(
+      "/api/categories",
+      requestOptions,
+    ),
   ]);
+  const totalArticles = articlesResponse.meta.total;
+  const publishedArticles = publishedResponse.meta.total;
+  const draftArticles = draftResponse.meta.total;
+  const totalCategories = categoriesResponse.data.length;
+  const recentArticles = articlesResponse.data;
   const numberFormatter = new Intl.NumberFormat(locale);
 
   return (
@@ -217,7 +237,11 @@ export default async function AdminDashboardPage() {
                         )}
                         <span>•</span>
                         <span>
-                          {formatRelativeTime(article.updatedAt, locale, dictionary)}
+                          {formatRelativeTime(
+                            new Date(article.updatedAt),
+                            locale,
+                            dictionary,
+                          )}
                         </span>
                         <span>•</span>
                         <span>

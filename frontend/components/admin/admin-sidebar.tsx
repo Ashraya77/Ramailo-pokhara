@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
-import { cn } from "@/frontend/lib/utils";
+import { cn } from "@/lib/utils";
 
 function isActive(pathname: string, href: string, exact?: boolean): boolean {
   if (exact) {

@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 
-import { findActiveCategoryBySlug } from "@/app/lib/services/category";
+import { findPublicCategoryBySlug } from "@/app/lib/services/laravel-public";
 import { slugify } from "@/app/lib/slug";
 
 export const getActiveCategoryPageData = cache(async (rawSlug: string) => {
@@ -11,5 +11,5 @@ export const getActiveCategoryPageData = cache(async (rawSlug: string) => {
   const slug = slugify(rawSlug);
   if (!slug || slug !== rawSlug) return null;
 
-  return findActiveCategoryBySlug(slug);
+  return findPublicCategoryBySlug(slug);
 });

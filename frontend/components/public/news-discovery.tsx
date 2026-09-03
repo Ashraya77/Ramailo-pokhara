@@ -7,7 +7,7 @@ import {
 } from "@/components/public/homepage-news";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/frontend/lib/utils";
+import { cn } from "@/lib/utils";
 
 export type PublicSearchParams = Record<
   string,

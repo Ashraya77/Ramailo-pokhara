@@ -5,7 +5,7 @@ import { formatPublicDateShort } from "@/app/lib/public-date";
 import { ui } from "@/app/lib/ui-text";
 import { ArticleImage } from "@/components/public/article-image";
 import type { PublicCategory } from "@/components/public/category-navigation";
-import { cn } from "@/frontend/lib/utils";
+import { cn } from "@/lib/utils";
 
 export type PublicArticleSummary = {
   id: string;

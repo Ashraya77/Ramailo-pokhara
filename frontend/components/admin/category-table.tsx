@@ -47,9 +47,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CategoryListItem } from "@/frontend/lib/admin-types";
+import { CategoryListItem } from "@/lib/admin-types";
 import { CategoryForm } from "@/components/admin/category-form";
-import { apiGet, apiDelete, apiPatch } from "@/frontend/lib/api-client";
+import {
+  delete as apiDelete,
+  get as apiGet,
+  post as apiPost,
+} from "@/lib/apiClient";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
 
 type CategoryTableProps = {
@@ -75,7 +79,10 @@ export function CategoryTable({ initialCategories }: CategoryTableProps) {
   const refreshData = async () => {
     setLoading(true);
     try {
-      const response = await apiGet<CategoryListItem[]>("/api/categories");
+      const response = await apiGet<{
+        success: true;
+        data: CategoryListItem[];
+      }>("/api/categories");
       setCategories(response.data);
     } catch (err: any) {
       console.error(err);
@@ -88,9 +95,15 @@ export function CategoryTable({ initialCategories }: CategoryTableProps) {
   // Toggle category active status
   const toggleActiveStatus = async (category: CategoryListItem) => {
     try {
-      await apiPatch(`/api/categories/${category.id}`, {
-        isActive: !category.isActive,
-      });
+      await apiPost(
+        `/api/categories/${category.id}`,
+        {
+          isActive: !category.isActive,
+        },
+        {
+          headers: { "X-HTTP-Method-Override": "PATCH" },
+        },
+      );
       toast.success(
         category.isActive
           ? dictionary.categories.deactivated

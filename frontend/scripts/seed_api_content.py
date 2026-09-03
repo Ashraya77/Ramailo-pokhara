@@ -335,7 +335,7 @@ class Seeder:
         path = ensure_placeholder(theme, color)
         with path.open("rb") as handle:
             response = self.session.post(
-                f"{self.base_url}/api/uploads/images",
+                f"{self.base_url}/api/upload",
                 files={"file": (path.name, handle, "image/png")},
                 timeout=60,
             )

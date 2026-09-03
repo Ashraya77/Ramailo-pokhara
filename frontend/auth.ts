@@ -1,9 +1,17 @@
-import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-import { prisma } from "@/app/lib/prisma";
 import { loginSchema } from "@/app/lib/validations/auth";
+
+declare module "next-auth" {
+  interface User {
+    accessToken: string;
+  }
+
+  interface Session {
+    accessToken: string;
+  }
+}
 
 export const {
   handlers,
@@ -44,48 +52,45 @@ export const {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: parsed.data.email,
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: parsed.data.email,
+              password: parsed.data.password,
+            }),
           },
-
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            passwordHash: true,
-            role: true,
-            isActive: true,
-          },
-        });
-
-        if (!user || !user.isActive) {
-          return null;
-        }
-
-        const passwordMatches = await bcrypt.compare(
-          parsed.data.password,
-          user.passwordHash,
         );
 
-        if (!passwordMatches) {
+        if (!response.ok) {
           return null;
         }
 
-        await prisma.user.update({
-          where: {
-            id: user.id,
-          },
+        const { data } = (await response.json()) as {
+          success: boolean;
           data: {
-            lastLoginAt: new Date(),
-          },
-        });
+            user: {
+              id: string;
+              name: string;
+              email: string;
+              role: "ADMIN";
+            };
+            token: string;
+          };
+        };
+
+        const { user } = data;
 
         return {
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
+          accessToken: data.token,
         };
       },
     }),
@@ -96,6 +101,7 @@ export const {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.accessToken = user.accessToken;
       }
 
       return token;
@@ -110,6 +116,8 @@ export const {
         session.user.id = token.id;
         session.user.role = token.role;
       }
+
+      session.accessToken = token.accessToken as string;
 
       return session;
     },

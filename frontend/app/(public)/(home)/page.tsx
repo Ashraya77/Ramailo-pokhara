@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { listArticles } from "@/app/lib/services/article";
-import { getHomepagePublicCategories } from "@/app/lib/public-data";
+import { listHomepageCategories, listPublicArticles } from "@/app/lib/services/laravel-public";
+
 import { siteConfig } from "@/app/lib/site-config";
 import { getSiteStructuredData } from "@/app/lib/structured-data";
 import { CategorySection } from "@/components/home/category-section";
@@ -54,10 +54,10 @@ function takeUnique(
 export default async function HomePage() {
   const [breakingResult, featuredResult, latestResult, homepageCategories] =
     await Promise.all([
-      listArticles({ page: 1, limit: 8, breaking: true }, false),
-      listArticles({ page: 1, limit: 12, featured: true }, false),
-      listArticles({ page: 1, limit: 36 }, false),
-      getHomepagePublicCategories(6),
+      listPublicArticles({ page: 1, limit: 8, breaking: true }),
+      listPublicArticles({ page: 1, limit: 12, featured: true }),
+      listPublicArticles({ page: 1, limit: 36 }),
+      listHomepageCategories(6),
     ]);
 
   const latestFeaturedStories = latestResult.articles.slice(0, 3);

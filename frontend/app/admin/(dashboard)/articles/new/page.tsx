@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
-import { listCategories } from "@/app/lib/services/category";
 import { ArticleForm } from "@/components/admin/article-form";
+import type { CategoryListItem } from "@/lib/admin-types";
+import { get as apiGet } from "@/lib/apiClient";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,7 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getAdminI18n } from "@/frontend/lib/admin-i18n-server";
+import { getAdminI18n } from "@/lib/admin-i18n-server";
 
 export const metadata: Metadata = {
   title: "New Article",
@@ -20,9 +21,11 @@ export const dynamic = "force-dynamic";
 
 export default async function NewArticlePage() {
   const { dictionary } = await getAdminI18n();
-  // Fetch categories to select in the form
-  const rawCategories = await listCategories({});
-  const categories = rawCategories.map((c) => ({
+  const response = await apiGet<{
+    success: true;
+    data: CategoryListItem[];
+  }>("/api/categories", { cache: "no-store" });
+  const categories = response.data.map((c) => ({
     id: c.id,
     name: c.name,
     slug: c.slug,

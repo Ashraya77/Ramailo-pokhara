@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { listCategories } from "@/app/lib/services/category";
-import { CategoryListItem } from "@/frontend/lib/admin-types";
+import { CategoryListItem } from "@/lib/admin-types";
+import { get as apiGet } from "@/lib/apiClient";
 import { CategoryTable } from "@/components/admin/category-table";
 import {
   Breadcrumb,
@@ -11,7 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getAdminI18n } from "@/frontend/lib/admin-i18n-server";
+import { getAdminI18n } from "@/lib/admin-i18n-server";
 
 export const metadata: Metadata = {
   title: "Categories",
@@ -21,15 +21,10 @@ export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
   const { dictionary } = await getAdminI18n();
-  // Fetch initial list of categories server-side
-  const rawCategories = await listCategories({});
-  
-  // Transform dates to ISO strings to pass to Client Component safely
-  const initialCategories: CategoryListItem[] = rawCategories.map((c) => ({
-    ...c,
-    createdAt: c.createdAt.toISOString(),
-    updatedAt: c.updatedAt.toISOString(),
-  }));
+  const response = await apiGet<{
+    success: true;
+    data: CategoryListItem[];
+  }>("/api/categories", { cache: "no-store" });
 
   return (
     <div className="space-y-6">
@@ -55,7 +50,7 @@ export default async function CategoriesPage() {
         </p>
       </div>
 
-      <CategoryTable initialCategories={initialCategories} />
+      <CategoryTable initialCategories={response.data} />
     </div>
   );
 }

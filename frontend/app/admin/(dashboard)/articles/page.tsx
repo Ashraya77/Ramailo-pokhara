@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
 
-import { listArticles } from "@/app/lib/services/article";
-import { listCategories } from "@/app/lib/services/category";
-import { articleListQuerySchema } from "@/app/lib/validations/article";
-import { ArticleListItem, ArticleListMeta } from "@/frontend/lib/admin-types";
+import { auth } from "@/auth";
+import {
+  ArticleListItem,
+  ArticleListMeta,
+  CategoryListItem,
+} from "@/lib/admin-types";
+import { get as apiGet } from "@/lib/apiClient";
 import { ArticleTable } from "@/components/admin/article-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +20,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getAdminI18n } from "@/frontend/lib/admin-i18n-server";
+import { getAdminI18n } from "@/lib/admin-i18n-server";
 
 export const metadata: Metadata = {
   title: "Articles",
@@ -29,7 +33,15 @@ type ArticlesPageProps = {
 };
 
 export default async function ArticlesPage({ searchParams }: ArticlesPageProps) {
-  const { dictionary } = await getAdminI18n();
+  const [session, { dictionary }] = await Promise.all([
+    auth(),
+    getAdminI18n(),
+  ]);
+
+  if (!session?.accessToken) {
+    redirect("/admin/login");
+  }
+
   // Next.js 16 searchParams is a Promise and must be awaited
   const resolvedSearchParams = await searchParams;
 
@@ -46,37 +58,31 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
   // Force admin listing
   queryObj.admin = "true";
 
-  const parsed = articleListQuerySchema.safeParse(queryObj);
-  const validatedQuery = parsed.success
-    ? parsed.data
-    : { page: 1, limit: 10, admin: true };
+  const parameters = new URLSearchParams();
 
-  // Fetch articles and categories in parallel server-side
-  const [articlesData, rawCategories] = await Promise.all([
-    listArticles(validatedQuery, true),
-    listCategories({}),
+  for (const [key, value] of Object.entries(queryObj)) {
+    if (value !== undefined) {
+      parameters.set(key, String(value));
+    }
+  }
+
+  const requestOptions = {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+    cache: "no-store" as const,
+  };
+  const [articlesResponse, categoriesResponse] = await Promise.all([
+    apiGet<{
+      success: true;
+      data: ArticleListItem[];
+      meta: ArticleListMeta;
+    }>(`/api/articles?${parameters}`, requestOptions),
+    apiGet<{ success: true; data: CategoryListItem[] }>(
+      "/api/categories",
+      requestOptions,
+    ),
   ]);
 
-  const initialArticles: ArticleListItem[] = articlesData.articles.map((art) => ({
-    ...art,
-    publishedAt: art.publishedAt?.toISOString() ?? null,
-    createdAt: art.createdAt.toISOString(),
-    updatedAt: art.updatedAt.toISOString(),
-    category: {
-      ...art.category,
-      color: art.category.color ?? null,
-    },
-    author: {
-      ...art.author,
-      name: art.author.name ?? "",
-    },
-  }));
-
-  const initialMeta: ArticleListMeta = {
-    ...articlesData.meta,
-  };
-
-  const categories = rawCategories.map((cat) => ({
+  const categories = categoriesResponse.data.map((cat) => ({
     id: cat.id,
     name: cat.name,
   }));
@@ -116,8 +122,8 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
       </div>
 
       <ArticleTable
-        initialArticles={initialArticles}
-        initialMeta={initialMeta}
+        initialArticles={articlesResponse.data}
+        initialMeta={articlesResponse.meta}
         categories={categories}
       />
     </div>

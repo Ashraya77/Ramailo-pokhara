@@ -14,8 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { slugifyOrFallback } from "@/app/lib/slug";
 import { countGraphemes } from "@/app/lib/text";
-import { apiPost, apiPatch } from "@/frontend/lib/api-client";
-import { CategoryListItem } from "@/frontend/lib/admin-types";
+import { post as apiPost } from "@/lib/apiClient";
+import { CategoryListItem } from "@/lib/admin-types";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
 import { InputLanguageToggle } from "@/components/admin/input-language-toggle";
 import {
@@ -143,7 +143,9 @@ export function CategoryForm({
         toast.success(dictionary.categories.created);
       } else {
         if (!initialData?.id) return;
-        await apiPatch(`/api/categories/${initialData.id}`, payload);
+        await apiPost(`/api/categories/${initialData.id}`, payload, {
+          headers: { "X-HTTP-Method-Override": "PATCH" },
+        });
         toast.success(dictionary.categories.updated);
       }
       onSuccess();

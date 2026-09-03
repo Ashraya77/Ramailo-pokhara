@@ -9,7 +9,7 @@ import {
   adminLanguageLabels,
   adminLanguages,
   type AdminLanguage,
-} from "@/frontend/lib/admin-i18n";
+} from "@/lib/admin-i18n";
 import {
   Select,
   SelectContent,

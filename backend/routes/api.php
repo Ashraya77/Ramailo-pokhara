@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\UploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -27,4 +28,5 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/articles/{id}', [ArticleController::class, 'show']);
     Route::patch('/articles/{id}', [ArticleController::class, 'update']);
     Route::delete('/articles/{id}', [ArticleController::class, 'destroy']);
+    Route::post('/upload', [UploadController::class, 'store']);
 });

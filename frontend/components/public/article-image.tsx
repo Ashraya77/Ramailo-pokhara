@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import { isSafeLocalArticleImagePath } from "@/app/lib/article-image-path";
-import { cn } from "@/frontend/lib/utils";
+import { cn } from "@/lib/utils";
 
 type ArticleImageProps = {
   src?: string | null;

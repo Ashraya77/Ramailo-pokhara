@@ -9,7 +9,7 @@ import {
   getAdminDictionary,
   isAdminLanguage,
   type AdminLanguage,
-} from "@/frontend/lib/admin-i18n";
+} from "@/lib/admin-i18n";
 
 export async function getAdminLanguage(): Promise<AdminLanguage> {
   const cookieStore = await cookies();

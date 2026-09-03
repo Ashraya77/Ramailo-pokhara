@@ -1,5 +1,5 @@
 import { normalizeArticleMetadataImage } from "@/app/lib/article-metadata-image";
-import { listPublishedArticlesForSeo } from "@/app/lib/services/article";
+import { listPublicArticles } from "@/app/lib/services/laravel-public";
 import { siteConfig } from "@/app/lib/site-config";
 
 export const dynamic = "force-static";
@@ -17,7 +17,7 @@ function escapeXml(value: string): string {
 }
 
 export async function GET() {
-  const articles = await listPublishedArticlesForSeo(RSS_ARTICLE_LIMIT);
+  const articles = await listPublicArticles({ limit: RSS_ARTICLE_LIMIT, sort: "publishedAt", order: "desc" }).then((result) => result.articles);
   const channelUrl = siteConfig.url.href;
   const feedUrl = new URL("/rss.xml", siteConfig.url).href;
   const items = articles.flatMap((article) => {

@@ -1,16 +1,19 @@
 import type { MetadataRoute } from "next";
 
 import { normalizeArticleMetadataImage } from "@/app/lib/article-metadata-image";
-import { listPublishedArticlesForSeo } from "@/app/lib/services/article";
-import { listActivePublicCategories } from "@/app/lib/services/category";
+import {
+  listAllPublicArticles,
+  listPublicCategories,
+} from "@/app/lib/services/laravel-public";
+
 import { siteConfig } from "@/app/lib/site-config";
 
 export const revalidate = 900;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [articles, categories] = await Promise.all([
-    listPublishedArticlesForSeo(),
-    listActivePublicCategories(),
+    listAllPublicArticles({ sort: "publishedAt", order: "desc" }),
+    listPublicCategories(),
   ]);
   const newestArticleUpdate = articles.reduce<Date | undefined>(
     (latest, article) =>

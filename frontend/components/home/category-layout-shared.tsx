@@ -8,7 +8,7 @@ import {
   type PublicArticleSummary,
 } from "@/components/public/homepage-news";
 import type { PublicCategory } from "@/components/public/category-navigation";
-import { cn } from "@/frontend/lib/utils";
+import { cn } from "@/lib/utils";
 
 export function CategorySectionHeading({
   category,

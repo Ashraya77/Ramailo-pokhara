@@ -3,28 +3,18 @@ import "server-only";
 import { cache } from "react";
 
 import {
-  findPublishedArticleBySlug,
-  listLatestPublishedArticles,
-  listRelatedPublishedArticlesByCategory,
-} from "@/app/lib/services/article";
+  getPublicArticleBySlug,
+  listLatestPublicArticles,
+  listRelatedPublicArticles,
+} from "@/app/lib/services/laravel-public";
 
-export const getArticlePageData = cache(
-  async (slug: string) => findPublishedArticleBySlug(slug),
-);
+export const getArticlePageData = cache(getPublicArticleBySlug);
 
 export const getRelatedArticlePageData = cache(
   async (articleId: string, categoryId: string) =>
-    listRelatedPublishedArticlesByCategory({
-      articleId,
-      categoryId,
-      limit: 6,
-    }),
+    listRelatedPublicArticles(articleId, categoryId, 6),
 );
 
 export const getLatestArticleSidebarData = cache(
-  async (articleId: string) =>
-    listLatestPublishedArticles({
-      excludeArticleId: articleId,
-      limit: 6,
-    }),
+  async (articleId: string) => listLatestPublicArticles(articleId, 6),
 );

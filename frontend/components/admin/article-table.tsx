@@ -54,8 +54,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArticleListItem, ArticleListMeta } from "@/frontend/lib/admin-types";
-import { apiGet, apiDelete, apiPatch } from "@/frontend/lib/api-client";
+import { ArticleListItem, ArticleListMeta } from "@/lib/admin-types";
+import {
+  delete as apiDelete,
+  get as apiGet,
+  post as apiPost,
+} from "@/lib/apiClient";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
 
 type ArticleTableProps = {
@@ -146,11 +150,13 @@ export function ArticleTable({
     });
 
     try {
-      const response = await apiGet<ArticleListItem[]>(`/api/articles?${queryParams.toString()}`);
+      const response = await apiGet<{
+        success: true;
+        data: ArticleListItem[];
+        meta: ArticleListMeta;
+      }>(`/api/articles?${queryParams.toString()}`);
       setArticles(response.data);
-      if (response.meta) {
-        setMeta(response.meta as ArticleListMeta);
-      }
+      setMeta(response.meta);
     } catch (err: any) {
       console.error(err);
       toast.error(dictionary.articles.fetchError);
@@ -181,7 +187,11 @@ export function ArticleTable({
   const handleToggleStatus = async (article: ArticleListItem) => {
     const nextStatus = article.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
     try {
-      await apiPatch(`/api/articles/${article.id}`, { status: nextStatus });
+      await apiPost(
+        `/api/articles/${article.id}`,
+        { status: nextStatus },
+        { headers: { "X-HTTP-Method-Override": "PATCH" } },
+      );
       toast.success(dictionary.articles.statusUpdated);
       fetchArticles();
     } catch (err: any) {

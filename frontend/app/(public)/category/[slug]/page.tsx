@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { listArticles } from "@/app/lib/services/article";
+import { listPublicArticles } from "@/app/lib/services/laravel-public";
 import { siteConfig } from "@/app/lib/site-config";
 import { getBreadcrumbStructuredData } from "@/app/lib/structured-data";
 import {
@@ -80,15 +80,14 @@ export default async function CategoryPage({
   if (!category) notFound();
 
   const page = parsePageParam(resolvedSearchParams.page);
-  const result = await listArticles(
+  const result = await listPublicArticles(
     {
       page,
       limit: ARTICLES_PER_PAGE,
       categoryId: category.id,
       sort: "publishedAt",
       order: "desc",
-    },
-    false,
+    }
   );
   const description =
     category.description ??

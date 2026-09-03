@@ -72,7 +72,7 @@ Content-Type: {{json}}
 
 ### Upload sample image
 # @name uploadSeedImage
-POST {{baseUrl}}/api/uploads/images
+POST {{baseUrl}}/api/upload
 Content-Type: multipart/form-data; boundary=RamailoBoundary
 
 --RamailoBoundary
@@ -162,7 +162,7 @@ Content-Type: {{json}}
 }
 
 ### Invalid image type
-POST {{baseUrl}}/api/uploads/images
+POST {{baseUrl}}/api/upload
 Content-Type: multipart/form-data; boundary=RamailoBadUpload
 
 --RamailoBadUpload

@@ -8,8 +8,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiUpload } from "@/frontend/lib/api-client";
-import { UploadedImage } from "@/frontend/lib/admin-types";
+import { post as apiPost } from "@/lib/apiClient";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
 import {
   handleNepaliInputBlur,
@@ -57,7 +56,10 @@ export function ImageUpload({
     formData.append("file", file);
 
     try {
-      const response = await apiUpload<UploadedImage>("/api/uploads/images", formData);
+      const response = await apiPost<{
+        success: true;
+        data: { url: string };
+      }>("/api/upload", formData);
       onChange(response.data.url);
       toast.success(dictionary.media.uploaded);
     } catch (err: any) {

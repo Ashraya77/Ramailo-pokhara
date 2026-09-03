@@ -3,9 +3,9 @@ import "server-only";
 import { cache } from "react";
 
 import {
-  listActivePublicCategories,
-  listActivePublicCategoriesWithArticles,
-} from "@/app/lib/services/category";
+  listHomepageCategories,
+  listPublicCategories,
+} from "@/app/lib/services/laravel-public";
 
-export const getActivePublicCategories = cache(listActivePublicCategories);
-export const getHomepagePublicCategories = cache(listActivePublicCategoriesWithArticles);
+export const getActivePublicCategories = cache(listPublicCategories);
+export const getHomepagePublicCategories = cache(listHomepageCategories);

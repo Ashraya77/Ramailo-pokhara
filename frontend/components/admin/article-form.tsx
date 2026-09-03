@@ -30,10 +30,10 @@ import {
   slugify,
   slugifyOrFallback,
 } from "@/app/lib/slug";
-import { apiPost, apiPatch } from "@/frontend/lib/api-client";
+import { post as apiPost } from "@/lib/apiClient";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { ImageUpload } from "@/components/admin/image-upload";
-import { ArticleListItem } from "@/frontend/lib/admin-types";
+import { ArticleListItem } from "@/lib/admin-types";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
 import { InputLanguageToggle } from "@/components/admin/input-language-toggle";
 import {
@@ -244,12 +244,17 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
 
     try {
       if (mode === "create") {
-        const response = await apiPost<ArticleListItem>("/api/articles", payload);
+        const response = await apiPost<{
+          success: true;
+          data: ArticleListItem;
+        }>("/api/articles", payload);
         toast.success(dictionary.articleForm.created);
         router.push(`/admin/articles/${response.data.id}/edit`);
       } else {
         if (!initialData?.id) return;
-        await apiPatch(`/api/articles/${initialData.id}`, payload);
+        await apiPost(`/api/articles/${initialData.id}`, payload, {
+          headers: { "X-HTTP-Method-Override": "PATCH" },
+        });
         toast.success(dictionary.articleForm.updated);
         router.refresh();
       }
