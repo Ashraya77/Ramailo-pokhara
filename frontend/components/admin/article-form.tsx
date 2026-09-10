@@ -249,7 +249,9 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
           data: ArticleListItem;
         }>("/api/articles", payload);
         toast.success(dictionary.articleForm.created);
-        router.push(`/admin/articles/${response.data.id}/edit`);
+        router.push(
+          `/admin/articles/edit?id=${encodeURIComponent(response.data.id)}`,
+        );
       } else {
         if (!initialData?.id) return;
         await apiPost(`/api/articles/${initialData.id}`, payload, {

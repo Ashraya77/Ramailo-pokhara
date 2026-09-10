@@ -1,8 +1,6 @@
-const DEVELOPMENT_SITE_URL = new URL("http://localhost:3000");
-
 function getSiteUrl(value: string | undefined): URL {
   if (!value) {
-    return DEVELOPMENT_SITE_URL;
+    throw new Error("NEXT_PUBLIC_SITE_URL is not configured.");
   }
 
   try {
@@ -12,10 +10,10 @@ function getSiteUrl(value: string | undefined): URL {
       return url;
     }
   } catch {
-    // Invalid public configuration safely falls back to the development URL.
+    throw new Error("NEXT_PUBLIC_SITE_URL must be an HTTP(S) URL.");
   }
 
-  return DEVELOPMENT_SITE_URL;
+  throw new Error("NEXT_PUBLIC_SITE_URL must be an HTTP(S) URL.");
 }
 
 export const siteConfig = Object.freeze({

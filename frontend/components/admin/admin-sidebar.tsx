@@ -49,14 +49,14 @@ export function AdminSidebar({ className }: { className?: string }) {
 
   return (
     <aside
-      className={cn("flex h-full flex-col bg-sidebar", className)}
+      className={cn("flex h-full flex-col bg-[#0F172A]", className)}
     >
-      <div className="flex h-14 items-center border-b border-sidebar-border px-4">
+      <div className="flex h-14 items-center border-b border-[#1E293B] px-4">
         <Link
           href="/admin"
-          className="flex items-center gap-2 font-semibold text-sidebar-foreground"
+          className="flex items-center gap-2 font-semibold text-slate-200"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#1E293B] text-slate-200 text-xs font-bold">
             R
           </div>
           <span className="text-sm">Ramailo Admin</span>
@@ -64,7 +64,7 @@ export function AdminSidebar({ className }: { className?: string }) {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-2 py-3">
-        <p className="px-2 pb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <p className="px-2 pb-1 text-xs font-medium text-slate-400 uppercase tracking-wider">
           {dictionary.common.content}
         </p>
         {navItems.map((item) => {
@@ -75,10 +75,10 @@ export function AdminSidebar({ className }: { className?: string }) {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+                "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
                 active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                  ? "bg-[#1E293B] text-slate-100"
+                  : "text-slate-300 hover:bg-[#172033] hover:text-slate-200",
               )}
             >
               <item.icon className="h-4 w-4 shrink-0" />
@@ -88,16 +88,16 @@ export function AdminSidebar({ className }: { className?: string }) {
         })}
 
         <div className="py-2">
-          <div className="h-px bg-sidebar-border" />
+          <div className="h-px bg-[#1E293B]" />
         </div>
 
-        <p className="px-2 pb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <p className="px-2 pb-1 text-xs font-medium text-slate-400 uppercase tracking-wider">
           {dictionary.common.external}
         </p>
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-[#172033] hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
         >
           <Globe className="h-4 w-4 shrink-0" />
           {dictionary.nav.viewWebsite}

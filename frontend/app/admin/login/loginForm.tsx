@@ -1,89 +1,9 @@
 "use client";
-
-import { useActionState } from "react";
-
-import {
-  loginAction,
-  type LoginState,
-} from "./actions";
-
-const initialState: LoginState = {};
-
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { LaravelApiError, post, setAccessToken } from "@/lib/apiClient";
 export function LoginForm() {
-  const [state, formAction, pending] = useActionState(
-    loginAction,
-    initialState,
-  );
-
-  return (
-    <form
-      action={formAction}
-      className="w-full max-w-sm space-y-5 rounded-xl border bg-white p-6 shadow-sm"
-    >
-      <div>
-        <h1 className="text-2xl font-semibold">
-          Admin login
-        </h1>
-
-        <p className="mt-1 text-sm text-neutral-500">
-          Sign in to manage news content.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <label
-          htmlFor="email"
-          className="text-sm font-medium"
-        >
-          Email
-        </label>
-
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          disabled={pending}
-          className="w-full rounded-md border px-3 py-2 outline-none focus:ring-2"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label
-          htmlFor="password"
-          className="text-sm font-medium"
-        >
-          Password
-        </label>
-
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          disabled={pending}
-          className="w-full rounded-md border px-3 py-2 outline-none focus:ring-2"
-        />
-      </div>
-
-      {state.error ? (
-        <p
-          role="alert"
-          className="text-sm text-red-600"
-        >
-          {state.error}
-        </p>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {pending ? "Signing in..." : "Sign in"}
-      </button>
-    </form>
-  );
+  const router = useRouter(); const [error, setError] = useState<string>(); const [pending, setPending] = useState(false);
+  async function submit(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); setPending(true); setError(undefined); const form = new FormData(event.currentTarget); try { const result = await post<{ data: { token: string } }>("/api/auth/login", { email: form.get("email"), password: form.get("password") }); setAccessToken(result.data.token); router.replace("/admin"); } catch (caught) { setError(caught instanceof LaravelApiError ? caught.message : "Unable to sign in."); } finally { setPending(false); } }
+  return <form onSubmit={submit} className="w-full max-w-sm space-y-5 rounded-xl border bg-white p-6 shadow-sm"><div><h1 className="text-2xl font-semibold">Admin login</h1><p className="mt-1 text-sm text-neutral-500">Sign in to manage news content.</p></div><div className="space-y-2"><label htmlFor="email" className="text-sm font-medium">Email</label><input id="email" name="email" type="email" autoComplete="email" required disabled={pending} className="w-full rounded-md border px-3 py-2 outline-none focus:ring-2" /></div><div className="space-y-2"><label htmlFor="password" className="text-sm font-medium">Password</label><input id="password" name="password" type="password" autoComplete="current-password" required disabled={pending} className="w-full rounded-md border px-3 py-2 outline-none focus:ring-2" /></div>{error ? <p role="alert" className="text-sm text-red-600">{error}</p> : null}<button type="submit" disabled={pending} className="w-full rounded-md bg-black px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60">{pending ? "Signing in..." : "Sign in"}</button></form>;
 }

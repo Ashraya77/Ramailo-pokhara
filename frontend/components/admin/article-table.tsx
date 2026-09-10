@@ -439,7 +439,11 @@ export function ArticleTable({
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>{dictionary.common.actions}</DropdownMenuLabel>
                         <DropdownMenuItem
-                          render={<Link href={`/admin/articles/${article.id}/edit`} />}
+                          render={
+                            <Link
+                              href={`/admin/articles/edit?id=${encodeURIComponent(article.id)}`}
+                            />
+                          }
                         >
                           <Pencil className="mr-2 h-4 w-4" />
                           {dictionary.articles.edit}

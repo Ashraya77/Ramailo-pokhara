@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 
 import { normalizeArticleMetadataImage } from "@/app/lib/article-metadata-image";
+import { listAllPublicArticles } from "@/app/lib/services/laravel-public";
 
 import { siteConfig } from "@/app/lib/site-config";
 import { slugify } from "@/app/lib/slug";
@@ -99,8 +99,6 @@ export async function generateMetadata({
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug: rawSlug } = await params;
-
-  await connection();
 
   const slug = slugify(rawSlug);
 
@@ -230,4 +228,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
      
     </article>
   );
+}
+
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  const articles = await listAllPublicArticles();
+
+  return articles.map((article) => ({ slug: article.slug }));
 }

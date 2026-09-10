@@ -7,6 +7,33 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Production deployment requirements
+
+Set these environment variables in the production host rather than committing
+`backend/.env`:
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://api.ramailopokhara.com
+DB_CONNECTION=mysql
+DB_HOST=...
+DB_PORT=3306
+DB_DATABASE=...
+DB_USERNAME=...
+DB_PASSWORD=...
+FILESYSTEM_DISK=public
+```
+
+After each deployment, run:
+
+```bash
+php artisan storage:link
+```
+
+The `public` disk generates upload URLs as `${APP_URL}/storage/...`; with the
+configuration above, uploads resolve at `https://api.ramailopokhara.com/storage/...`.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

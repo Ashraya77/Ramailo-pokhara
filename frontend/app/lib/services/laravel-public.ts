@@ -91,7 +91,7 @@ export async function getPublicArticleBySlug(slug: string): Promise<PublicArticl
       success: true;
       data: Parameters<typeof article>[0];
     }>(`/api/articles/slug/${encodeURIComponent(slug)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
 
     return article(response.data);

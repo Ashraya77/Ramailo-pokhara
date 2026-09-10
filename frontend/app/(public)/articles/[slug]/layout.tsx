@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 
 import { slugify } from "@/app/lib/slug";
 
@@ -15,8 +14,6 @@ export default async function ArticleRouteLayout({
   params,
 }: ArticleRouteLayoutProps) {
   const { slug: rawSlug } = await params;
-  await connection();
-
   const slug = slugify(rawSlug);
   const article = slug ? await getArticlePageData(slug) : null;
 
