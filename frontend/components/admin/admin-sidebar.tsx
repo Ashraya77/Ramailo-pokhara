@@ -26,23 +26,23 @@ export function AdminSidebar({ className }: { className?: string }) {
   const navItems = [
     {
       label: dictionary.nav.dashboard,
-      href: "/admin",
+      href: "/dashboard",
       icon: LayoutDashboard,
       exact: true,
     },
     {
       label: dictionary.nav.articles,
-      href: "/admin/articles",
+      href: "/articles",
       icon: FileText,
     },
     {
       label: dictionary.nav.newArticle,
-      href: "/admin/articles/new",
+      href: "/articles/new",
       icon: PenSquare,
     },
     {
       label: dictionary.nav.categories,
-      href: "/admin/categories",
+      href: "/categories",
       icon: FolderOpen,
     },
   ];
@@ -53,7 +53,7 @@ export function AdminSidebar({ className }: { className?: string }) {
     >
       <div className="flex h-14 items-center border-b border-[#1E293B] px-4">
         <Link
-          href="/admin"
+          href="/dashboard"
           className="flex items-center gap-2 font-semibold text-slate-200"
         >
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#1E293B] text-slate-200 text-xs font-bold">

@@ -10,7 +10,6 @@ import {
   Trash2,
   Globe,
   FileEdit,
-  Eye,
   Search,
   Star,
   Zap,
@@ -29,8 +28,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -58,7 +55,6 @@ import { ArticleListItem, ArticleListMeta } from "@/lib/admin-types";
 import {
   delete as apiDelete,
   get as apiGet,
-  post as apiPost,
 } from "@/lib/apiClient";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
 
@@ -182,22 +178,6 @@ export function ArticleTable({
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     updateUrlParams(newPage, status, categoryId);
-  };
-
-  const handleToggleStatus = async (article: ArticleListItem) => {
-    const nextStatus = article.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
-    try {
-      await apiPost(
-        `/api/articles/${article.id}`,
-        { status: nextStatus },
-        { headers: { "X-HTTP-Method-Override": "PATCH" } },
-      );
-      toast.success(dictionary.articles.statusUpdated);
-      fetchArticles();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.message ?? dictionary.articles.updateError);
-    }
   };
 
   const handleDelete = async () => {
@@ -429,6 +409,7 @@ export function ArticleTable({
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger
+                        onClick={(event) => event.stopPropagation()}
                         render={
                           <Button variant="ghost" size="icon" className="h-8 w-8">
                             <MoreHorizontal className="h-4 w-4" />
@@ -436,42 +417,24 @@ export function ArticleTable({
                           </Button>
                         }
                       />
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>{dictionary.common.actions}</DropdownMenuLabel>
+                      <DropdownMenuContent
+                        align="end"
+                        onClick={(event) => event.stopPropagation()}
+                      >
                         <DropdownMenuItem
                           render={
                             <Link
-                              href={`/admin/articles/edit?id=${encodeURIComponent(article.id)}`}
+                              href={`/articles/edit?id=${encodeURIComponent(article.id)}`}
+                              onClick={(event) => event.stopPropagation()}
                             />
                           }
                         >
                           <Pencil className="mr-2 h-4 w-4" />
                           {dictionary.articles.edit}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggleStatus(article)}>
-                          {article.status === "PUBLISHED" ? (
-                            <>
-                              <FileEdit className="mr-2 h-4 w-4" />
-                              {dictionary.articles.moveToDraft}
-                            </>
-                          ) : (
-                            <>
-                              <Globe className="mr-2 h-4 w-4" />
-                              {dictionary.articles.publish}
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        {article.status === "PUBLISHED" && (
-                          <DropdownMenuItem
-                            render={<Link href={`/articles/${article.slug}`} target="_blank" />}
-                          >
-                            <Eye className="mr-2 h-4 w-4" />
-                            {dictionary.articles.viewPublic}
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => {
+                          onClick={(event) => {
+                            event.stopPropagation();
                             setArticleToDelete(article);
                             setDeleteDialogOpen(true);
                           }}

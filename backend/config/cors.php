@@ -5,7 +5,13 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://ramailopokhara.com'],
+    'allowed_origins' => [
+    'https://ramailopokhara.com',
+    'https://www.ramailopokhara.com',
+     'https://www.admin.ramailopokhara.com',
+     'http://localhost:3000'
+
+],
 
     'allowed_origins_patterns' => [],
 

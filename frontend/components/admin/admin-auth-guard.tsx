@@ -15,17 +15,17 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
     get<{ data: { user: AuthenticatedAdmin } }>("/api/auth/me")
       .then(({ data }) => {
         if (data.user.role !== "ADMIN") {
-          router.replace("/admin/login");
+          router.replace("/login");
           return;
         }
         setUser(data.user);
       })
       .catch((error: unknown) => {
         if (error instanceof LaravelApiError && error.status === 401) {
-          router.replace("/admin/login");
+          router.replace("/login");
           return;
         }
-        router.replace("/admin/login");
+        router.replace("/login");
       });
   }, [router]);
 

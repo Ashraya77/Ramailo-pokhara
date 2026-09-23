@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "split:build": "bash scripts/split-build.sh",
+    "build:split": "npm run build && npm run split:build",
     "start": "next start",
     "lint": "eslint"
   },

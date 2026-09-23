@@ -250,7 +250,7 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
         }>("/api/articles", payload);
         toast.success(dictionary.articleForm.created);
         router.push(
-          `/admin/articles/edit?id=${encodeURIComponent(response.data.id)}`,
+          `/articles/edit?id=${encodeURIComponent(response.data.id)}`,
         );
       } else {
         if (!initialData?.id) return;
@@ -286,7 +286,7 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
             size="icon"
             className="h-8 w-8"
             nativeButton={false}
-            render={<Link href="/admin/articles" />}
+            render={<Link href="/articles" />}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -310,7 +310,7 @@ export function ArticleForm({ mode, initialData, categories }: ArticleFormProps)
             type="button"
             disabled={saving}
             nativeButton={false}
-            render={<Link href="/admin/articles" />}
+            render={<Link href="/articles" />}
           >
             {dictionary.common.cancel}
           </Button>
