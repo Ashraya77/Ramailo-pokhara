@@ -124,7 +124,7 @@ const englishDictionary = {
     createDescription: "Add a new category to group news articles.",
     editDescription: "Modify the details of your news category.",
     deleteTitle: "Delete this category?",
-    deleteDescription: "This action cannot be undone. The category will be permanently removed from the system.",
+    deleteDescription: "Are you sure you want to delete this category? This action cannot be undone. The category will be permanently removed from the system.",
     namePlaceholder: "Category name",
     slugPlaceholder: "category-slug",
     descriptionPlaceholder: "Brief category description",

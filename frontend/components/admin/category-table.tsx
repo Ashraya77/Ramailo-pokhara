@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   FolderOpen,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -24,7 +25,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -52,7 +52,6 @@ import { CategoryForm } from "@/components/admin/category-form";
 import {
   delete as apiDelete,
   get as apiGet,
-  post as apiPost,
 } from "@/lib/apiClient";
 import { useAdminI18n } from "@/components/admin/admin-language-provider";
 
@@ -64,7 +63,6 @@ export function CategoryTable({ initialCategories }: CategoryTableProps) {
   const { dictionary, locale } = useAdminI18n();
   const [categories, setCategories] = useState<CategoryListItem[]>(initialCategories);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
 
   // Dialog / AlertDialog states
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -73,66 +71,55 @@ export function CategoryTable({ initialCategories }: CategoryTableProps) {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<CategoryListItem | undefined>(undefined);
+  const [isDeleting, setIsDeleting] = useState(false);
   const numberFormatter = new Intl.NumberFormat(locale);
 
   // Refresh categories data from API
   const refreshData = async () => {
-    setLoading(true);
     try {
       const response = await apiGet<{
         success: true;
         data: CategoryListItem[];
       }>("/api/categories");
       setCategories(response.data);
-    } catch (err: any) {
-      console.error(err);
-      toast.error(dictionary.categories.loadError);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Toggle category active status
-  const toggleActiveStatus = async (category: CategoryListItem) => {
-    try {
-      await apiPost(
-        `/api/categories/${category.id}`,
-        {
-          isActive: !category.isActive,
-        },
-        {
-          headers: { "X-HTTP-Method-Override": "PATCH" },
-        },
+    } catch (error: unknown) {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : dictionary.categories.loadError,
       );
-      toast.success(
-        category.isActive
-          ? dictionary.categories.deactivated
-          : dictionary.categories.activated,
-      );
-      refreshData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.message ?? dictionary.categories.updateError);
     }
   };
 
   // Delete category
   const handleDelete = async () => {
-    if (!categoryToDelete) return;
+    const category = categoryToDelete;
+    if (!category || isDeleting) return;
+
+    setIsDeleting(true);
     try {
-      await apiDelete(`/api/categories/${categoryToDelete.id}`);
+      await apiDelete(`/api/categories/${category.id}`);
+      setCategories((currentCategories) =>
+        currentCategories.filter(({ id }) => id !== category.id),
+      );
       toast.success(dictionary.categories.deleted);
-      refreshData();
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === "CATEGORY_IN_USE") {
-        toast.error(dictionary.categories.inUseError);
-      } else {
-        toast.error(err.message ?? dictionary.categories.deleteError);
-      }
-    } finally {
       setDeleteDialogOpen(false);
       setCategoryToDelete(undefined);
+    } catch (error: unknown) {
+      console.error(error);
+      const errorCode =
+        error !== null && typeof error === "object" && "code" in error
+          ? error.code
+          : undefined;
+
+      if (errorCode === "CATEGORY_IN_USE") {
+        toast.error(dictionary.categories.inUseError);
+      } else {
+        toast.error(
+          error instanceof Error ? error.message : dictionary.categories.deleteError,
+        );
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -235,12 +222,6 @@ export function CategoryTable({ initialCategories }: CategoryTableProps) {
                           <Pencil className="mr-2 h-4 w-4" />
                           {dictionary.categories.editDetails}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toggleActiveStatus(category)}>
-                          {category.isActive
-                            ? dictionary.categories.deactivate
-                            : dictionary.categories.activate}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => {
                             setCategoryToDelete(category);
@@ -289,7 +270,14 @@ export function CategoryTable({ initialCategories }: CategoryTableProps) {
       </Dialog>
 
       {/* Delete Confirmation Alert Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          if (isDeleting) return;
+          setDeleteDialogOpen(open);
+          if (!open) setCategoryToDelete(undefined);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{dictionary.categories.deleteTitle}</AlertDialogTitle>
@@ -304,14 +292,19 @@ export function CategoryTable({ initialCategories }: CategoryTableProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setCategoryToDelete(undefined)}>
+            <AlertDialogCancel disabled={isDeleting} onClick={() => setCategoryToDelete(undefined)}>
               {dictionary.common.cancel}
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              disabled={isDeleting}
+              onClick={(event) => {
+                event.preventDefault();
+                void handleDelete();
+              }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {dictionary.categories.delete}
+              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isDeleting ? dictionary.common.deleting : dictionary.categories.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
